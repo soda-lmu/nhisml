@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "nhisml: A survey-aware machine learning toolkit for NHIS Adults data"
 type: software
-version: 0.5.1
-date-released: "2026-07-19"
+version: 0.5.2
+date-released: "2026-07-24"
 license: MIT
 repository-code: "https://github.com/LuguReign/nhis-ml-benchmark"
 authors:

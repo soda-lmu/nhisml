@@ -191,7 +191,7 @@ Contributions are welcome. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
   title   = {{nhisml: A survey-aware machine learning toolkit for NHIS Adults data}},
   author  = {Lugu Reign, Nicholas and Lamoreaux, Catherine and Simson, Jan and Kern, Christoph and Kreuter, Frauke},
   year    = {2026},
-  version = {0.5.1},
+  version = {0.5.2},
   url     = {https://github.com/LuguReign/nhis-ml-benchmark}
 }
 ```
