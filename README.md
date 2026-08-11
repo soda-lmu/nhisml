@@ -42,7 +42,6 @@ cd nhis-ml-benchmark
 pip install -e ".[dev]"
 ```
 
-**Requirements:** Python ≥ 3.9, numpy ≥ 1.26, pandas ≥ 2.1, scikit-learn ≥ 1.4, joblib ≥ 1.3, requests ≥ 2.31, tqdm ≥ 4.66, pyarrow ≥ 14.
 
 ## Quick Start
 
