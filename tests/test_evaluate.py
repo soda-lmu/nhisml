@@ -2,6 +2,7 @@
 Tests for nhisml.evaluate — weighted metrics, run resolution helpers,
 and end-to-end evaluation on synthetic data.
 """
+
 from __future__ import annotations
 
 import json
@@ -9,7 +10,6 @@ import os
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import pytest
 
 from nhisml.evaluate import (
@@ -24,17 +24,25 @@ from nhisml.evaluate import (
 # _weighted_binary_metrics
 # ---------------------------------------------------------------------------
 
+
 class TestWeightedBinaryMetrics:
     def _call(self, y, p, w=None, thr=0.5):
         if w is None:
             w = np.ones(len(y))
-        return _weighted_binary_metrics(np.array(y), np.array(p, dtype=float),
-                                        np.array(w, dtype=float), thr)
+        return _weighted_binary_metrics(
+            np.array(y), np.array(p, dtype=float), np.array(w, dtype=float), thr
+        )
 
     def test_keys_present(self):
         m = self._call([0, 1, 0, 1], [0.2, 0.8, 0.3, 0.7])
-        for key in ("weighted_auc", "weighted_pr_auc", "weighted_log_loss",
-                    "weighted_brier", "weighted_f1", "threshold"):
+        for key in (
+            "weighted_auc",
+            "weighted_pr_auc",
+            "weighted_log_loss",
+            "weighted_brier",
+            "weighted_f1",
+            "threshold",
+        ):
             assert key in m, f"Missing key: {key}"
 
     def test_auc_perfect(self):
@@ -78,6 +86,7 @@ class TestWeightedBinaryMetrics:
 # _resolve_run_path
 # ---------------------------------------------------------------------------
 
+
 class TestResolveRunPath:
     def test_directory_with_manifest(self, tmp_path):
         manifest = tmp_path / "manifest.json"
@@ -104,14 +113,19 @@ class TestResolveRunPath:
 # _find_latest_manifest_for_task
 # ---------------------------------------------------------------------------
 
+
 class TestFindLatestManifest:
     def _make_run(self, base: Path, run_name: str, task: str, created_at: str) -> None:
         d = base / run_name
         d.mkdir()
-        (d / "manifest.json").write_text(json.dumps({
-            "task": task,
-            "created_at": created_at,
-        }))
+        (d / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "task": task,
+                    "created_at": created_at,
+                }
+            )
+        )
 
     def test_finds_correct_task(self, tmp_path):
         self._make_run(tmp_path, "run_a", "srh_binary", "2024-01-01T10:00:00")
@@ -145,6 +159,7 @@ class TestFindLatestManifest:
 # ---------------------------------------------------------------------------
 # _resolve_core_path
 # ---------------------------------------------------------------------------
+
 
 class TestResolveCorePathFn:
     def test_explicit_path(self):

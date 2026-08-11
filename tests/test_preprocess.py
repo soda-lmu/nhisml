@@ -2,6 +2,7 @@
 Tests for nhisml.preprocess — NHIS missing-code handling, PrepareFrame,
 build_preprocessor, schema extraction, and feature name utilities.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -10,7 +11,6 @@ import pytest
 from sklearn.pipeline import Pipeline
 
 from nhisml.preprocess import (
-    NHIS_MISSING,
     PrepareFrame,
     PreprocessSchema,
     _map_missing,
@@ -25,6 +25,7 @@ from nhisml.preprocess import (
 # ---------------------------------------------------------------------------
 # normalize_weights
 # ---------------------------------------------------------------------------
+
 
 class TestNormalizeWeights:
     def test_mean_one(self):
@@ -63,6 +64,7 @@ class TestNormalizeWeights:
 # _map_missing
 # ---------------------------------------------------------------------------
 
+
 class TestMapMissing:
     def test_nhis_codes_become_nan(self):
         df = pd.DataFrame({"X": [1, 7, 8, 9, 97, 98, 99, 2]})
@@ -88,6 +90,7 @@ class TestMapMissing:
 # _recode_binary_12
 # ---------------------------------------------------------------------------
 
+
 class TestRecodeBinary12:
     def test_1_to_1_and_2_to_0(self):
         df = pd.DataFrame({"Y": [1, 2, 1, 2]})
@@ -110,6 +113,7 @@ class TestRecodeBinary12:
 # ---------------------------------------------------------------------------
 # PrepareFrame
 # ---------------------------------------------------------------------------
+
 
 def _make_synthetic_df(n: int = 200) -> pd.DataFrame:
     rng = np.random.default_rng(0)
@@ -166,8 +170,9 @@ class TestPrepareFrame:
 
     def test_rare_bucketing(self):
         df = pd.DataFrame({"CAT_A": ["A"] * 100 + ["B"] * 100 + ["RARE"] * 2})
-        pf = PrepareFrame(binary_cols=[], ordinal_cols=[], categorical_cols=["CAT_A"],
-                          rare_min_count=10)
+        pf = PrepareFrame(
+            binary_cols=[], ordinal_cols=[], categorical_cols=["CAT_A"], rare_min_count=10
+        )
         pf.fit(df)
         levels = pf.categorical_levels_["CAT_A"]
         assert "__RARE__" in levels
@@ -179,8 +184,9 @@ class TestPrepareFrame:
         # Include a rare training category so __RARE__ is added to the level set.
         # Without it, unseen values are left as-is (no __RARE__ bucket exists).
         df_train = pd.DataFrame({"CAT_A": ["A"] * 100 + ["B"] * 100 + ["RARE_TRAIN"] * 2})
-        pf = PrepareFrame(binary_cols=[], ordinal_cols=[], categorical_cols=["CAT_A"],
-                          rare_min_count=5)
+        pf = PrepareFrame(
+            binary_cols=[], ordinal_cols=[], categorical_cols=["CAT_A"], rare_min_count=5
+        )
         pf.fit(df_train)
         df_test = pd.DataFrame({"CAT_A": ["A", "UNSEEN_VALUE"]})
         out = pf.transform(df_test)
@@ -188,8 +194,7 @@ class TestPrepareFrame:
 
     def test_absent_columns_skipped(self):
         df = pd.DataFrame({"OTHER": [1, 2, 3]})
-        pf = PrepareFrame(binary_cols=["BIN_A"], ordinal_cols=["ORD_A"],
-                          categorical_cols=["CAT_A"])
+        pf = PrepareFrame(binary_cols=["BIN_A"], ordinal_cols=["ORD_A"], categorical_cols=["CAT_A"])
         pf.fit(df)
         assert pf.binary_cols_ == []
         assert pf.ordinal_cols_ == []
@@ -203,16 +208,21 @@ class TestPrepareFrame:
 
     def test_no_missing_flags_option(self):
         df = _make_synthetic_df()
-        pf = PrepareFrame(binary_cols=["BIN_A"], ordinal_cols=["ORD_A"],
-                          categorical_cols=["CAT_A"], add_missing_flags=False)
+        pf = PrepareFrame(
+            binary_cols=["BIN_A"],
+            ordinal_cols=["ORD_A"],
+            categorical_cols=["CAT_A"],
+            add_missing_flags=False,
+        )
         pf.fit(df)
         assert pf.added_missing_flags_ == []
 
     def test_nhis_missing_codes_cleared(self):
         """Values 7, 8, 9 in ordinal should become NaN after transform."""
         df = pd.DataFrame({"ORD_A": [1, 7, 9, 3]})
-        pf = PrepareFrame(binary_cols=[], ordinal_cols=["ORD_A"],
-                          categorical_cols=[], add_missing_flags=False)
+        pf = PrepareFrame(
+            binary_cols=[], ordinal_cols=["ORD_A"], categorical_cols=[], add_missing_flags=False
+        )
         pf.fit(df)
         out = pf.transform(df)
         assert pd.isna(out["ORD_A"].iloc[1])
@@ -223,6 +233,7 @@ class TestPrepareFrame:
 # ---------------------------------------------------------------------------
 # build_preprocessor + get_feature_names + build_schema_from_fitted
 # ---------------------------------------------------------------------------
+
 
 class TestBuildPreprocessor:
     def _fitted_pipeline(self):
@@ -282,6 +293,7 @@ class TestBuildPreprocessor:
         p = str(tmp_path / "schema.json")
         schema.to_json(p)
         import json
+
         with open(p) as f:
             loaded = json.load(f)
         assert loaded["binary_cols"] == schema.binary_cols

@@ -84,11 +84,17 @@ def _resolve_core_path(core_path: Optional[str], year: Optional[int], data_dir: 
     return os.path.abspath(os.path.join(data_dir, f"core_{int(year)}.parquet"))
 
 
-def _weighted_binary_metrics(y: np.ndarray, p: np.ndarray, w: np.ndarray, thr: float) -> Dict[str, float]:
+def _weighted_binary_metrics(
+    y: np.ndarray, p: np.ndarray, w: np.ndarray, thr: float
+) -> Dict[str, float]:
     pred = (p >= thr).astype(int)
     return {
-        "weighted_auc": float(roc_auc_score(y, p, sample_weight=w)) if (y.sum() > 0 and (1 - y).sum() > 0) else float("nan"),
-        "weighted_pr_auc": float(average_precision_score(y, p, sample_weight=w)) if (y.sum() > 0 and (1 - y).sum() > 0) else float("nan"),
+        "weighted_auc": float(roc_auc_score(y, p, sample_weight=w))
+        if (y.sum() > 0 and (1 - y).sum() > 0)
+        else float("nan"),
+        "weighted_pr_auc": float(average_precision_score(y, p, sample_weight=w))
+        if (y.sum() > 0 and (1 - y).sum() > 0)
+        else float("nan"),
         "weighted_log_loss": float(log_loss(y, p, sample_weight=w, labels=[0, 1])),
         "weighted_brier": float(brier_score_loss(y, p, sample_weight=w)),
         "weighted_f1": float(f1_score(y, pred, sample_weight=w)),
@@ -108,12 +114,27 @@ def cli(argv: Optional[list[str]] = None) -> None:
     p.add_argument("--runs-dir", default="runs", help="Base runs directory (default: runs/)")
 
     # core input: either --in or --year
-    p.add_argument("--in", dest="core_path", default=None, help="Core parquet to evaluate on (optional if using --year)")
-    p.add_argument("--year", type=int, default=None, help="Shortcut for --in <data-dir>/core_YYYY.parquet")
-    p.add_argument("--data-dir", default="data", help="Base data directory for --year shortcut (default: data/)")
+    p.add_argument(
+        "--in",
+        dest="core_path",
+        default=None,
+        help="Core parquet to evaluate on (optional if using --year)",
+    )
+    p.add_argument(
+        "--year", type=int, default=None, help="Shortcut for --in <data-dir>/core_YYYY.parquet"
+    )
+    p.add_argument(
+        "--data-dir",
+        default="data",
+        help="Base data directory for --year shortcut (default: data/)",
+    )
 
     p.add_argument("--out", default=None, help="Optional output dir (default: run dir)")
-    p.add_argument("--threshold-key", default=None, help="Which threshold key to use (default: model name from manifest)")
+    p.add_argument(
+        "--threshold-key",
+        default=None,
+        help="Which threshold key to use (default: model name from manifest)",
+    )
     p.add_argument("--weight-col", default="WTFA_A", help="Weight column name in core parquet")
     args = p.parse_args(argv)
 
@@ -189,9 +210,9 @@ def cli(argv: Optional[list[str]] = None) -> None:
 
     # Save predictions
     pred_path = os.path.join(out_dir, f"predictions_task={task.name}.parquet")
-    pd.DataFrame(
-        {"y": y, "p": p1, "pred": (p1 >= thr).astype(int), "w": w}
-    ).to_parquet(pred_path, index=False)
+    pd.DataFrame({"y": y, "p": p1, "pred": (p1 >= thr).astype(int), "w": w}).to_parquet(
+        pred_path, index=False
+    )
 
     # Save metrics json
     metrics_path = os.path.join(out_dir, f"metrics_task={task.name}.json")
@@ -199,7 +220,15 @@ def cli(argv: Optional[list[str]] = None) -> None:
 
     # Display
     print(f"Evaluated run: {run_dir}")
-    print(f"Task: {task.name} | Model: {model_name} | N eligible: {len(df_eval):,} | Weights: {'yes' if used_weights else 'no'}")
-    print(f"AUC(w): {metrics['weighted_auc']:.4f} | PR-AUC(w): {metrics['weighted_pr_auc']:.4f} | Brier(w): {metrics['weighted_brier']:.4f}")
-    print(f"F1(w)@{thr:.2f}: {metrics['weighted_f1']:.4f} | LogLoss(w): {metrics['weighted_log_loss']:.4f}")
-    print(f"Wrote: {os.path.relpath(metrics_path, start=run_dir)} and {os.path.relpath(pred_path, start=run_dir)}")
+    print(
+        f"Task: {task.name} | Model: {model_name} | N eligible: {len(df_eval):,} | Weights: {'yes' if used_weights else 'no'}"
+    )
+    print(
+        f"AUC(w): {metrics['weighted_auc']:.4f} | PR-AUC(w): {metrics['weighted_pr_auc']:.4f} | Brier(w): {metrics['weighted_brier']:.4f}"
+    )
+    print(
+        f"F1(w)@{thr:.2f}: {metrics['weighted_f1']:.4f} | LogLoss(w): {metrics['weighted_log_loss']:.4f}"
+    )
+    print(
+        f"Wrote: {os.path.relpath(metrics_path, start=run_dir)} and {os.path.relpath(pred_path, start=run_dir)}"
+    )

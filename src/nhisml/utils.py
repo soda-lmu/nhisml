@@ -14,6 +14,7 @@ from sklearn.pipeline import Pipeline
 # sklearn ≥ 1.6 removed cv="prefit"; use FrozenEstimator instead.
 try:
     from sklearn.frozen import FrozenEstimator as _FrozenEstimator
+
     _HAVE_FROZEN = True
 except ImportError:
     _HAVE_FROZEN = False
@@ -36,7 +37,9 @@ def infer_estimator_step_name(model) -> Optional[str]:
     return None
 
 
-def _route_fit_weights_kwargs(model, w: np.ndarray, step_name: Optional[str] = None) -> Dict[str, np.ndarray]:
+def _route_fit_weights_kwargs(
+    model, w: np.ndarray, step_name: Optional[str] = None
+) -> Dict[str, np.ndarray]:
     """
     Route sample_weight to the estimator.
     If step_name is None and model is Pipeline, infer final step name.
@@ -122,7 +125,9 @@ def weighted_threshold_via_oof(
     Compute weighted-fit OOF probabilities, then choose threshold (max weighted F1).
     Returns (best_threshold, perf_dict, oof_probs).
     """
-    probs = oof_proba(model, X, y, w, step_name=step_name, n_splits=n_splits, random_state=random_state)
+    probs = oof_proba(
+        model, X, y, w, step_name=step_name, n_splits=n_splits, random_state=random_state
+    )
     thr, best_f1 = pick_threshold_max_f1(probs, y, w)
     perf = threshold_perf(probs, y, w, thr)
     perf["oof_best_weighted_f1"] = float(best_f1)

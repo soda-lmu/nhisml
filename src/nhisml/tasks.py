@@ -17,6 +17,7 @@ class Task:
     - make_labels: function returning (y, eligible_mask).
       eligible_mask can be None to indicate all rows eligible.
     """
+
     name: str
     problem_type: str  # currently only "binary"
     description: str
@@ -31,6 +32,7 @@ class Task:
 # Helpers
 def _to_num(s: pd.Series) -> pd.Series:
     return pd.to_numeric(s, errors="coerce")
+
 
 # SRH binary task
 def _srh_binary(df: pd.DataFrame) -> Tuple[np.ndarray, Optional[np.ndarray]]:
@@ -48,6 +50,7 @@ def _srh_binary(df: pd.DataFrame) -> Tuple[np.ndarray, Optional[np.ndarray]]:
 
 
 # Smoking current task
+
 
 def _smoking_current(df: pd.DataFrame) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """
@@ -80,6 +83,7 @@ def _smoking_current(df: pd.DataFrame) -> Tuple[np.ndarray, Optional[np.ndarray]
     y = s.map({1: 1, 2: 1, 3: 0}).fillna(0).astype(int).to_numpy()
     return y, eligible
 
+
 # Task registry
 _TASKS = {
     "srh_binary": Task(
@@ -98,14 +102,13 @@ _TASKS = {
     ),
 }
 
+
 # Public API
 def make_task(name: str) -> Task:
     try:
         return _TASKS[name]
     except KeyError:
-        raise ValueError(
-            f"Unknown task '{name}'. Available tasks: {', '.join(sorted(_TASKS))}"
-        )
+        raise ValueError(f"Unknown task '{name}'. Available tasks: {', '.join(sorted(_TASKS))}")
 
 
 def list_tasks() -> List[str]:

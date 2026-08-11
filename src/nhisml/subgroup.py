@@ -100,7 +100,9 @@ def _ece_weighted(y: np.ndarray, p: np.ndarray, w: np.ndarray, n_bins: int = 10)
     return float(ece)
 
 
-def _weighted_binary_metrics(y: np.ndarray, p: np.ndarray, w: np.ndarray, thr: float) -> Dict[str, float]:
+def _weighted_binary_metrics(
+    y: np.ndarray, p: np.ndarray, w: np.ndarray, thr: float
+) -> Dict[str, float]:
     pred = (p >= thr).astype(int)
     out = {
         "weighted_brier": float(brier_score_loss(y, p, sample_weight=w)),
@@ -200,7 +202,9 @@ def _subgroup_table(
             "n_pos": n_pos,
             "n_neg": n_neg,
             "weighted_n": float(np.sum(ww)),
-            "pos_rate_weighted": float(np.average(yy, weights=ww)) if np.sum(ww) > 0 else float("nan"),
+            "pos_rate_weighted": float(np.average(yy, weights=ww))
+            if np.sum(ww) > 0
+            else float("nan"),
             "threshold": float(thr),
             "meets_min_cell": bool(ok),
         }
@@ -209,27 +213,47 @@ def _subgroup_table(
             m = _weighted_binary_metrics(yy, pp, ww, thr)
             base.update(m)
             # fairness deltas vs overall
-            base["delta_auc"] = float(m["weighted_auc"] - overall["weighted_auc"]) if np.isfinite(overall["weighted_auc"]) else float("nan")
-            base["delta_f1"] = float(m["weighted_f1"] - overall["weighted_f1"]) if np.isfinite(overall["weighted_f1"]) else float("nan")
-            base["delta_brier"] = float(m["weighted_brier"] - overall["weighted_brier"]) if np.isfinite(overall["weighted_brier"]) else float("nan")
-            base["delta_ece"] = float(m["ece"] - overall["ece"]) if np.isfinite(overall["ece"]) else float("nan")
+            base["delta_auc"] = (
+                float(m["weighted_auc"] - overall["weighted_auc"])
+                if np.isfinite(overall["weighted_auc"])
+                else float("nan")
+            )
+            base["delta_f1"] = (
+                float(m["weighted_f1"] - overall["weighted_f1"])
+                if np.isfinite(overall["weighted_f1"])
+                else float("nan")
+            )
+            base["delta_brier"] = (
+                float(m["weighted_brier"] - overall["weighted_brier"])
+                if np.isfinite(overall["weighted_brier"])
+                else float("nan")
+            )
+            base["delta_ece"] = (
+                float(m["ece"] - overall["ece"]) if np.isfinite(overall["ece"]) else float("nan")
+            )
         else:
-            base.update({
-                "weighted_auc": float("nan"),
-                "weighted_pr_auc": float("nan"),
-                "weighted_brier": float("nan"),
-                "weighted_log_loss": float("nan"),
-                "weighted_f1": float("nan"),
-                "ece": float("nan"),
-                "delta_auc": float("nan"),
-                "delta_f1": float("nan"),
-                "delta_brier": float("nan"),
-                "delta_ece": float("nan"),
-            })
+            base.update(
+                {
+                    "weighted_auc": float("nan"),
+                    "weighted_pr_auc": float("nan"),
+                    "weighted_brier": float("nan"),
+                    "weighted_log_loss": float("nan"),
+                    "weighted_f1": float("nan"),
+                    "ece": float("nan"),
+                    "delta_auc": float("nan"),
+                    "delta_f1": float("nan"),
+                    "delta_brier": float("nan"),
+                    "delta_ece": float("nan"),
+                }
+            )
 
         rows.append(base)
 
-    out = pd.DataFrame(rows).sort_values(["subgroup", "n"], ascending=[True, False]).reset_index(drop=True)
+    out = (
+        pd.DataFrame(rows)
+        .sort_values(["subgroup", "n"], ascending=[True, False])
+        .reset_index(drop=True)
+    )
     return out
 
 
@@ -241,14 +265,36 @@ def cli(argv: Optional[list[str]] = None) -> None:
     p.add_argument("--latest", action="store_true", help="Use latest run for the given --task")
     p.add_argument("--runs-dir", default="runs", help="Base runs directory (default: runs/)")
 
-    p.add_argument("--in", dest="core_path", default=None, help="Core parquet to evaluate on (optional if using --year)")
-    p.add_argument("--year", type=int, default=None, help="Shortcut for --in <data-dir>/core_YYYY.parquet")
-    p.add_argument("--data-dir", default="data", help="Base data directory for --year shortcut (default: data/)")
+    p.add_argument(
+        "--in",
+        dest="core_path",
+        default=None,
+        help="Core parquet to evaluate on (optional if using --year)",
+    )
+    p.add_argument(
+        "--year", type=int, default=None, help="Shortcut for --in <data-dir>/core_YYYY.parquet"
+    )
+    p.add_argument(
+        "--data-dir",
+        default="data",
+        help="Base data directory for --year shortcut (default: data/)",
+    )
 
-    p.add_argument("--out", default=None, help="Optional output csv path (default: <run_dir>/subgroups_task=<task>.csv)")
-    p.add_argument("--by", nargs="+", required=True, help="Subgroups: sex age education or raw columns like REGION URBRRL23 EDUCP_A")
+    p.add_argument(
+        "--out",
+        default=None,
+        help="Optional output csv path (default: <run_dir>/subgroups_task=<task>.csv)",
+    )
+    p.add_argument(
+        "--by",
+        nargs="+",
+        required=True,
+        help="Subgroups: sex age education or raw columns like REGION URBRRL23 EDUCP_A",
+    )
     p.add_argument("--weight-col", default="WTFA_A")
-    p.add_argument("--threshold-key", default=None, help="Threshold key (default: manifest['model'])")
+    p.add_argument(
+        "--threshold-key", default=None, help="Threshold key (default: manifest['model'])"
+    )
     p.add_argument("--min-n", type=int, default=200)
     p.add_argument("--min-pos", type=int, default=25)
     p.add_argument("--min-neg", type=int, default=25)
@@ -318,19 +364,21 @@ def cli(argv: Optional[list[str]] = None) -> None:
             if labels.isna().all():
                 skipped.append(key)
                 continue
-            tables.append(_subgroup_table(
-                df_eval=df_eval,
-                y=y_eval,
-                p=p1,
-                w=w_eval,
-                thr=thr,
-                subgroup_name=key_l,
-                labels=labels,
-                overall=overall,
-                min_n=args.min_n,
-                min_pos=args.min_pos,
-                min_neg=args.min_neg,
-            ))
+            tables.append(
+                _subgroup_table(
+                    df_eval=df_eval,
+                    y=y_eval,
+                    p=p1,
+                    w=w_eval,
+                    thr=thr,
+                    subgroup_name=key_l,
+                    labels=labels,
+                    overall=overall,
+                    min_n=args.min_n,
+                    min_pos=args.min_pos,
+                    min_neg=args.min_neg,
+                )
+            )
             continue
 
         # raw column
@@ -338,19 +386,21 @@ def cli(argv: Optional[list[str]] = None) -> None:
             skipped.append(key)
             continue
         labels = df_eval[key].astype("object")
-        tables.append(_subgroup_table(
-            df_eval=df_eval,
-            y=y_eval,
-            p=p1,
-            w=w_eval,
-            thr=thr,
-            subgroup_name=key,
-            labels=labels,
-            overall=overall,
-            min_n=args.min_n,
-            min_pos=args.min_pos,
-            min_neg=args.min_neg,
-        ))
+        tables.append(
+            _subgroup_table(
+                df_eval=df_eval,
+                y=y_eval,
+                p=p1,
+                w=w_eval,
+                thr=thr,
+                subgroup_name=key,
+                labels=labels,
+                overall=overall,
+                min_n=args.min_n,
+                min_pos=args.min_pos,
+                min_neg=args.min_neg,
+            )
+        )
 
     if not tables:
         raise SystemExit(f"No valid subgroup specs. Missing/empty: {skipped}")
@@ -361,7 +411,9 @@ def cli(argv: Optional[list[str]] = None) -> None:
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     out.to_csv(out_path, index=False)
 
-    print(f"Subgroup eval: {task.name} | Model: {model_name} | Threshold: {thr:.3f} | Weights: {'yes' if used_weights else 'no'}")
+    print(
+        f"Subgroup eval: {task.name} | Model: {model_name} | Threshold: {thr:.3f} | Weights: {'yes' if used_weights else 'no'}"
+    )
     if skipped:
         print(f"[subgroup] Skipped (missing): {', '.join(skipped)}")
     print(f"Wrote: {os.path.relpath(out_path, start=run_dir)}")

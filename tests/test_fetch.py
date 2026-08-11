@@ -2,6 +2,7 @@
 Tests for nhisml.fetch — URL registry, path helpers, and download_file
 (non-network parts only; actual HTTP calls are not made in the test suite).
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -20,6 +21,7 @@ from nhisml.fetch import (
 # ---------------------------------------------------------------------------
 # URL registry
 # ---------------------------------------------------------------------------
+
 
 class TestNhisUrls:
     def test_known_years_present(self):
@@ -42,6 +44,7 @@ class TestNhisUrls:
 # ---------------------------------------------------------------------------
 # _default_zip_path
 # ---------------------------------------------------------------------------
+
 
 class TestDefaultZipPath:
     def test_year_2023(self):
@@ -68,6 +71,7 @@ class TestDefaultZipPath:
 # ---------------------------------------------------------------------------
 # fetch_year — error cases (no network)
 # ---------------------------------------------------------------------------
+
 
 class TestFetchYear:
     def test_unknown_year_no_url_raises(self):
@@ -96,6 +100,7 @@ class TestFetchYear:
 # ---------------------------------------------------------------------------
 # download_file — caching logic (no actual network)
 # ---------------------------------------------------------------------------
+
 
 class TestDownloadFile:
     def test_uses_cache_when_exists(self, tmp_path):

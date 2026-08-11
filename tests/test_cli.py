@@ -3,6 +3,7 @@ Tests for nhisml.cli — CLI entry-point, subcommand dispatch,
 and informational commands (list-tasks, describe-task, etc.).
 These tests do not require downloading NHIS data.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -13,6 +14,7 @@ from nhisml.cli import main
 # ---------------------------------------------------------------------------
 # list-tasks
 # ---------------------------------------------------------------------------
+
 
 class TestListTasks:
     def test_list_tasks_prints_srh(self, capsys):
@@ -35,6 +37,7 @@ class TestListTasks:
 # ---------------------------------------------------------------------------
 # describe-task
 # ---------------------------------------------------------------------------
+
 
 class TestDescribeTask:
     def test_describe_srh(self, capsys):
@@ -62,6 +65,7 @@ class TestDescribeTask:
 # list-featuresets
 # ---------------------------------------------------------------------------
 
+
 class TestListFeaturesets:
     def test_list_featuresets_prints_core(self, capsys):
         main(["list-featuresets"])
@@ -72,6 +76,7 @@ class TestListFeaturesets:
 # ---------------------------------------------------------------------------
 # describe-featureset
 # ---------------------------------------------------------------------------
+
 
 class TestDescribeFeatureset:
     def test_describe_core(self, capsys):
@@ -95,6 +100,7 @@ class TestDescribeFeatureset:
 # validate-data — wiring check (no real data needed)
 # ---------------------------------------------------------------------------
 
+
 class TestValidateDataCli:
     def test_missing_data_file_exits_nonzero(self, tmp_path):
         """validate-data should exit 1 when the parquet does not exist."""
@@ -105,6 +111,7 @@ class TestValidateDataCli:
     def test_unknown_year_exits_nonzero(self, tmp_path):
         """validate-data should exit 1 for a year with no reference statistics."""
         import pandas as pd
+
         # Create a dummy parquet so the file-not-found path is skipped
         pd.DataFrame({"WTFA_A": [1.0]}).to_parquet(tmp_path / "core_1990.parquet")
         with pytest.raises(SystemExit) as exc_info:
@@ -115,6 +122,7 @@ class TestValidateDataCli:
 # ---------------------------------------------------------------------------
 # Top-level dispatch — missing subcommand
 # ---------------------------------------------------------------------------
+
 
 class TestTopLevel:
     def test_no_subcommand_exits(self):

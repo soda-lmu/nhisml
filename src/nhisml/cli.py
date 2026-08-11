@@ -18,30 +18,51 @@ def main(argv: Optional[list[str]] = None) -> None:
     if argv is None:
         argv = sys.argv[1:]
 
-    p = argparse.ArgumentParser(prog="nhisml", description="nhisml: survey-aware NHIS Adults ML starter kit")
+    p = argparse.ArgumentParser(
+        prog="nhisml", description="nhisml: survey-aware NHIS Adults ML starter kit"
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
 
     # fetch
     pf = sub.add_parser("fetch", help="Download and cache NHIS Adults raw zip files")
-    pf.add_argument("--year", type=int, action="append", required=True, help="Year(s) to fetch, e.g. --year 2023 --year 2024")
+    pf.add_argument(
+        "--year",
+        type=int,
+        action="append",
+        required=True,
+        help="Year(s) to fetch, e.g. --year 2023 --year 2024",
+    )
     pf.add_argument("--data-dir", default="data", help="Base data directory (default: data/)")
     pf.add_argument("--force", action="store_true", help="Re-download even if cached")
-    pf.add_argument("--url", default=None, help="Override download URL (only if one --year is provided)")
+    pf.add_argument(
+        "--url", default=None, help="Override download URL (only if one --year is provided)"
+    )
     pf.set_defaults(func=lambda a: fetch_mod.cli(_rebuild_argv("fetch", a)))
 
     # build-core
     pc = sub.add_parser("build-core", help="Build a clean core parquet from cached raw NHIS zip")
     pc.add_argument("--year", type=int, action="append", required=True)
-    pc.add_argument("--data-dir", default="data", help="Base data directory (raw zips under data/raw/)")
+    pc.add_argument(
+        "--data-dir", default="data", help="Base data directory (raw zips under data/raw/)"
+    )
     pc.add_argument("--out-dir", default="data", help="Output directory for core parquet")
     pc.add_argument("--featureset", default="core")
-    pc.add_argument("--task", action="append", default=None, help="Task(s) to ensure label cols are included")
+    pc.add_argument(
+        "--task", action="append", default=None, help="Task(s) to ensure label cols are included"
+    )
     pc.add_argument("--weight-col", default="WTFA_A")
     pc.set_defaults(func=lambda a: build_core_mod.cli(_rebuild_argv("build-core", a)))
 
     # train
-    pt = sub.add_parser("train", help="Train a baseline model for a task and produce a run directory")
-    pt.add_argument("--in", dest="core_path", required=True, help="Path to core parquet (e.g., data/core_2023.parquet)")
+    pt = sub.add_parser(
+        "train", help="Train a baseline model for a task and produce a run directory"
+    )
+    pt.add_argument(
+        "--in",
+        dest="core_path",
+        required=True,
+        help="Path to core parquet (e.g., data/core_2023.parquet)",
+    )
     pt.add_argument("--task", default="srh_binary")
     pt.add_argument("--featureset", default="core")
     pt.add_argument("--model", default="lasso", help="lasso | rf")
@@ -51,18 +72,35 @@ def main(argv: Optional[list[str]] = None) -> None:
     pt.set_defaults(func=lambda a: train_mod.cli(_rebuild_argv("train", a)))
 
     # evaluate
-    pe = sub.add_parser("evaluate", help="Evaluate a trained run on a core parquet (writes metrics + predictions)")
+    pe = sub.add_parser(
+        "evaluate", help="Evaluate a trained run on a core parquet (writes metrics + predictions)"
+    )
     pe.add_argument("--run", required=False, help="Run directory or manifest.json path")
     pe.add_argument("--task", default=None, help="Task name (used with --latest)")
     pe.add_argument("--latest", action="store_true", help="Use latest run for the given --task")
     pe.add_argument("--runs-dir", default="runs", help="Base runs directory (default: runs/)")
 
-    pe.add_argument("--in", dest="core_path", required=False, help="Core parquet to evaluate on (optional if using --year)")
-    pe.add_argument("--year", type=int, default=None, help="Shortcut for --in <data-dir>/core_YYYY.parquet")
-    pe.add_argument("--data-dir", default="data", help="Base data directory for --year shortcut (default: data/)")
+    pe.add_argument(
+        "--in",
+        dest="core_path",
+        required=False,
+        help="Core parquet to evaluate on (optional if using --year)",
+    )
+    pe.add_argument(
+        "--year", type=int, default=None, help="Shortcut for --in <data-dir>/core_YYYY.parquet"
+    )
+    pe.add_argument(
+        "--data-dir",
+        default="data",
+        help="Base data directory for --year shortcut (default: data/)",
+    )
 
     pe.add_argument("--out", default=None, help="Optional output dir (default: run dir)")
-    pe.add_argument("--threshold-key", default=None, help="Which threshold key to use (default: model name from manifest)")
+    pe.add_argument(
+        "--threshold-key",
+        default=None,
+        help="Which threshold key to use (default: model name from manifest)",
+    )
     pe.add_argument("--weight-col", default="WTFA_A")
     pe.set_defaults(func=lambda a: evaluate_mod.cli(_rebuild_argv("evaluate", a)))
 
@@ -73,14 +111,36 @@ def main(argv: Optional[list[str]] = None) -> None:
     ps.add_argument("--latest", action="store_true", help="Use latest run for the given --task")
     ps.add_argument("--runs-dir", default="runs", help="Base runs directory (default: runs/)")
 
-    ps.add_argument("--in", dest="core_path", required=False, help="Core parquet to evaluate on (optional if using --year)")
-    ps.add_argument("--year", type=int, default=None, help="Shortcut for --in <data-dir>/core_YYYY.parquet")
-    ps.add_argument("--data-dir", default="data", help="Base data directory for --year shortcut (default: data/)")
+    ps.add_argument(
+        "--in",
+        dest="core_path",
+        required=False,
+        help="Core parquet to evaluate on (optional if using --year)",
+    )
+    ps.add_argument(
+        "--year", type=int, default=None, help="Shortcut for --in <data-dir>/core_YYYY.parquet"
+    )
+    ps.add_argument(
+        "--data-dir",
+        default="data",
+        help="Base data directory for --year shortcut (default: data/)",
+    )
 
-    ps.add_argument("--out", default=None, help="Optional output csv path (default: <run_dir>/subgroups_task=<task>.csv)")
-    ps.add_argument("--by", nargs="+", required=True, help="Subgroups: sex age education or raw columns like REGION EDUCP_A")
+    ps.add_argument(
+        "--out",
+        default=None,
+        help="Optional output csv path (default: <run_dir>/subgroups_task=<task>.csv)",
+    )
+    ps.add_argument(
+        "--by",
+        nargs="+",
+        required=True,
+        help="Subgroups: sex age education or raw columns like REGION EDUCP_A",
+    )
     ps.add_argument("--weight-col", default="WTFA_A")
-    ps.add_argument("--threshold-key", default=None, help="Threshold key (default: manifest['model'])")
+    ps.add_argument(
+        "--threshold-key", default=None, help="Threshold key (default: manifest['model'])"
+    )
     ps.add_argument("--min-n", type=int, default=200)
     ps.add_argument("--min-pos", type=int, default=25)
     ps.add_argument("--min-neg", type=int, default=25)
@@ -102,7 +162,9 @@ def main(argv: Optional[list[str]] = None) -> None:
     plf.set_defaults(func=_cmd_list_featuresets)
 
     # describe-featureset
-    pdfs = sub.add_parser("describe-featureset", help="Describe a feature set (counts and column lists)")
+    pdfs = sub.add_parser(
+        "describe-featureset", help="Describe a feature set (counts and column lists)"
+    )
     pdfs.add_argument("featureset", help="Feature set name")
     pdfs.set_defaults(func=_cmd_describe_featureset)
 
@@ -111,12 +173,24 @@ def main(argv: Optional[list[str]] = None) -> None:
         "validate-data",
         help="Validate processed core parquets against known NHIS Adults reference statistics",
     )
-    pv.add_argument("--year", type=int, action="append", required=True,
-                    help="Year(s) to validate, e.g. --year 2023 --year 2024")
-    pv.add_argument("--data-dir", default="data",
-                    help="Directory containing core_YYYY.parquet files (default: data/)")
-    pv.add_argument("--verbose", "-v", action="store_true",
-                    help="Show expected/actual values for passing checks too")
+    pv.add_argument(
+        "--year",
+        type=int,
+        action="append",
+        required=True,
+        help="Year(s) to validate, e.g. --year 2023 --year 2024",
+    )
+    pv.add_argument(
+        "--data-dir",
+        default="data",
+        help="Directory containing core_YYYY.parquet files (default: data/)",
+    )
+    pv.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Show expected/actual values for passing checks too",
+    )
     pv.set_defaults(func=lambda a: validate_data_mod.cli(_rebuild_argv("validate-data", a)))
 
     args = p.parse_args(argv)
@@ -227,5 +301,12 @@ def _subgroup_argv(args: argparse.Namespace) -> list[str]:
     if args.threshold_key is not None:
         out += ["--threshold-key", str(args.threshold_key)]
 
-    out += ["--min-n", str(args.min_n), "--min-pos", str(args.min_pos), "--min-neg", str(args.min_neg)]
+    out += [
+        "--min-n",
+        str(args.min_n),
+        "--min-pos",
+        str(args.min_pos),
+        "--min-neg",
+        str(args.min_neg),
+    ]
     return out

@@ -2,11 +2,11 @@
 Tests for nhisml.subgroup — recode helpers, weighted ECE, and
 subgroup metrics table construction.
 """
+
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from nhisml.subgroup import (
     _ece_weighted,
@@ -21,6 +21,7 @@ from nhisml.subgroup import (
 # ---------------------------------------------------------------------------
 # _recode_sex
 # ---------------------------------------------------------------------------
+
 
 class TestRecodeSex:
     def test_male_1_female_2(self):
@@ -50,6 +51,7 @@ class TestRecodeSex:
 # ---------------------------------------------------------------------------
 # _recode_age_band
 # ---------------------------------------------------------------------------
+
 
 class TestRecodeAgeBand:
     def test_band_boundaries(self):
@@ -86,6 +88,7 @@ class TestRecodeAgeBand:
 # _recode_educ_4
 # ---------------------------------------------------------------------------
 
+
 class TestRecodeEduc4:
     def test_level_mapping(self):
         # Avoid NHIS missing codes 7, 8, 9 (stripped to NaN by _clean_nhis_numeric).
@@ -118,6 +121,7 @@ class TestRecodeEduc4:
 # _ece_weighted
 # ---------------------------------------------------------------------------
 
+
 class TestEceWeighted:
     def test_perfect_calibration_near_zero(self):
         """When confidence equals accuracy in each bin, ECE ≈ 0."""
@@ -134,8 +138,7 @@ class TestEceWeighted:
         assert np.isnan(ece)
 
     def test_zero_weight_returns_nan(self):
-        ece = _ece_weighted(np.array([0, 1]), np.array([0.3, 0.7]),
-                            np.array([0.0, 0.0]))
+        ece = _ece_weighted(np.array([0, 1]), np.array([0.3, 0.7]), np.array([0.0, 0.0]))
         assert np.isnan(ece)
 
     def test_ece_in_0_1_range(self):
@@ -150,6 +153,7 @@ class TestEceWeighted:
 # ---------------------------------------------------------------------------
 # _weighted_binary_metrics (subgroup version — includes ECE)
 # ---------------------------------------------------------------------------
+
 
 class TestSubgroupWeightedMetrics:
     def test_keys_include_ece(self):
@@ -166,13 +170,16 @@ class TestSubgroupWeightedMetrics:
 # _subgroup_table (integration)
 # ---------------------------------------------------------------------------
 
+
 class TestSubgroupTable:
     def _make_eval_data(self, n: int = 500):
         rng = np.random.default_rng(7)
-        df = pd.DataFrame({
-            "SEX_A": rng.choice([1, 2], size=n),
-            "AGEP_A": rng.integers(18, 80, size=n),
-        })
+        df = pd.DataFrame(
+            {
+                "SEX_A": rng.choice([1, 2], size=n),
+                "AGEP_A": rng.integers(18, 80, size=n),
+            }
+        )
         y = rng.integers(0, 2, size=n)
         p = rng.uniform(size=n)
         w = np.ones(n)
@@ -181,24 +188,42 @@ class TestSubgroupTable:
     def test_returns_dataframe(self):
         df, y, p, w = self._make_eval_data()
         from nhisml.subgroup import _recode_sex, _weighted_binary_metrics
+
         overall = _weighted_binary_metrics(y, p, w, thr=0.5)
         labels = _recode_sex(df)
         result = _subgroup_table(
-            df_eval=df, y=y, p=p, w=w, thr=0.5,
-            subgroup_name="sex", labels=labels,
-            overall=overall, min_n=10, min_pos=5, min_neg=5,
+            df_eval=df,
+            y=y,
+            p=p,
+            w=w,
+            thr=0.5,
+            subgroup_name="sex",
+            labels=labels,
+            overall=overall,
+            min_n=10,
+            min_pos=5,
+            min_neg=5,
         )
         assert isinstance(result, pd.DataFrame)
 
     def test_subgroup_column_present(self):
         df, y, p, w = self._make_eval_data()
         from nhisml.subgroup import _recode_sex, _weighted_binary_metrics
+
         overall = _weighted_binary_metrics(y, p, w, thr=0.5)
         labels = _recode_sex(df)
         result = _subgroup_table(
-            df_eval=df, y=y, p=p, w=w, thr=0.5,
-            subgroup_name="sex", labels=labels,
-            overall=overall, min_n=10, min_pos=5, min_neg=5,
+            df_eval=df,
+            y=y,
+            p=p,
+            w=w,
+            thr=0.5,
+            subgroup_name="sex",
+            labels=labels,
+            overall=overall,
+            min_n=10,
+            min_pos=5,
+            min_neg=5,
         )
         assert "subgroup" in result.columns
         assert all(result["subgroup"] == "sex")
@@ -206,12 +231,21 @@ class TestSubgroupTable:
     def test_levels_present(self):
         df, y, p, w = self._make_eval_data()
         from nhisml.subgroup import _recode_sex, _weighted_binary_metrics
+
         overall = _weighted_binary_metrics(y, p, w, thr=0.5)
         labels = _recode_sex(df)
         result = _subgroup_table(
-            df_eval=df, y=y, p=p, w=w, thr=0.5,
-            subgroup_name="sex", labels=labels,
-            overall=overall, min_n=10, min_pos=5, min_neg=5,
+            df_eval=df,
+            y=y,
+            p=p,
+            w=w,
+            thr=0.5,
+            subgroup_name="sex",
+            labels=labels,
+            overall=overall,
+            min_n=10,
+            min_pos=5,
+            min_neg=5,
         )
         levels = set(result["level"].tolist())
         assert "Male" in levels
@@ -223,11 +257,20 @@ class TestSubgroupTable:
         # Inject a very rare subgroup level
         labels = pd.Series(["common"] * 590 + ["tiny"] * 10, dtype="object")
         from nhisml.subgroup import _weighted_binary_metrics
+
         overall = _weighted_binary_metrics(y, p, w, thr=0.5)
         result = _subgroup_table(
-            df_eval=df, y=y, p=p, w=w, thr=0.5,
-            subgroup_name="test_sg", labels=labels,
-            overall=overall, min_n=200, min_pos=25, min_neg=25,
+            df_eval=df,
+            y=y,
+            p=p,
+            w=w,
+            thr=0.5,
+            subgroup_name="test_sg",
+            labels=labels,
+            overall=overall,
+            min_n=200,
+            min_pos=25,
+            min_neg=25,
         )
         tiny_row = result[result["level"] == "tiny"]
         assert len(tiny_row) == 1

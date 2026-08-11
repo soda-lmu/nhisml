@@ -2,6 +2,7 @@
 Tests for nhisml.utils — OOF cross-validation, threshold picking,
 performance metrics, and calibration utilities.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -25,6 +26,7 @@ from nhisml.utils import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _binary_data(n: int = 400, seed: int = 0):
     rng = np.random.default_rng(seed)
     X = pd.DataFrame(rng.standard_normal((n, 4)), columns=["a", "b", "c", "d"])
@@ -34,15 +36,18 @@ def _binary_data(n: int = 400, seed: int = 0):
 
 
 def _simple_pipeline():
-    return Pipeline([
-        ("sc", StandardScaler()),
-        ("clf", LogisticRegression(max_iter=200, random_state=42)),
-    ])
+    return Pipeline(
+        [
+            ("sc", StandardScaler()),
+            ("clf", LogisticRegression(max_iter=200, random_state=42)),
+        ]
+    )
 
 
 # ---------------------------------------------------------------------------
 # infer_estimator_step_name
 # ---------------------------------------------------------------------------
+
 
 class TestInferEstimatorStepName:
     def test_pipeline_returns_final_step(self):
@@ -57,6 +62,7 @@ class TestInferEstimatorStepName:
 # ---------------------------------------------------------------------------
 # pick_threshold_max_f1
 # ---------------------------------------------------------------------------
+
 
 class TestPickThreshold:
     def test_returns_tuple(self):
@@ -95,6 +101,7 @@ class TestPickThreshold:
 # threshold_perf
 # ---------------------------------------------------------------------------
 
+
 class TestThresholdPerf:
     def test_keys_present(self):
         probs = np.array([0.2, 0.8, 0.3, 0.7])
@@ -124,6 +131,7 @@ class TestThresholdPerf:
 # ---------------------------------------------------------------------------
 # oof_proba
 # ---------------------------------------------------------------------------
+
 
 class TestOofProba:
     def test_output_shape(self):
@@ -159,6 +167,7 @@ class TestOofProba:
 # weighted_threshold_via_oof (integration)
 # ---------------------------------------------------------------------------
 
+
 class TestWeightedThresholdViaOof:
     def test_returns_three_items(self):
         X, y, w = _binary_data()
@@ -185,13 +194,12 @@ class TestWeightedThresholdViaOof:
 # fit_calibrated_from_oof
 # ---------------------------------------------------------------------------
 
+
 class TestFitCalibratedFromOof:
     def test_returns_four_items(self):
         X, y, w = _binary_data(n=300)
         model = _simple_pipeline()
-        cal_model, thr, perf, oof_cal = fit_calibrated_from_oof(
-            model, X, y, w, n_splits=3
-        )
+        cal_model, thr, perf, oof_cal = fit_calibrated_from_oof(model, X, y, w, n_splits=3)
         assert hasattr(cal_model, "predict_proba")
         assert isinstance(thr, float)
         assert isinstance(perf, dict)

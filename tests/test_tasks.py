@@ -1,6 +1,7 @@
 """
 Tests for nhisml.tasks — task registry, label generation, eligibility masking.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -13,6 +14,7 @@ from nhisml.tasks import Task, list_tasks, make_task
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
+
 
 class TestRegistry:
     def test_list_tasks_returns_known(self):
@@ -48,6 +50,7 @@ class TestRegistry:
 # ---------------------------------------------------------------------------
 # srh_binary label generation
 # ---------------------------------------------------------------------------
+
 
 class TestSrhBinary:
     def _df(self, values):
@@ -116,6 +119,7 @@ class TestSrhBinary:
 # smoking_current label generation
 # ---------------------------------------------------------------------------
 
+
 class TestSmokingCurrent:
     def test_primary_column_smokers(self):
         """SMKCIGST_A 1,2 -> current smoker (1); 3,4 -> non-smoker (0)."""
@@ -131,9 +135,9 @@ class TestSmokingCurrent:
         t = make_task("smoking_current")
         y, eligible = t.make_labels(df)
         # rows 1 and 2 (SMKCIGST_A 7, 9) are not in {1,2,3,4}
-        assert eligible[0] == True
-        assert eligible[1] == False
-        assert eligible[2] == False
+        assert eligible[0] is True
+        assert eligible[1] is False
+        assert eligible[2] is False
 
     def test_fallback_column_used_when_primary_absent(self):
         """Without SMKCIGST_A, falls back to SMKNOW_A: 1,2->1; 3->0."""

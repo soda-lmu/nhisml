@@ -22,7 +22,9 @@ def _raw_zip_path(data_dir: str, year: int) -> Path:
 
 def _read_adult_csv_from_zip(zip_path: Path) -> pd.DataFrame:
     if not zip_path.exists():
-        raise FileNotFoundError(f"Missing raw zip: {zip_path}. Run `nhisml fetch --year {zip_path.parent.name}` first.")
+        raise FileNotFoundError(
+            f"Missing raw zip: {zip_path}. Run `nhisml fetch --year {zip_path.parent.name}` first."
+        )
 
     with zipfile.ZipFile(zip_path, "r") as zf:
         csvs = [n for n in zf.namelist() if n.lower().endswith(".csv")]
@@ -114,10 +116,14 @@ def build_core_year(
 def cli(argv: Optional[list[str]] = None) -> None:
     p = argparse.ArgumentParser("nhisml build-core")
     p.add_argument("--year", type=int, action="append", required=True)
-    p.add_argument("--data-dir", default="data", help="Base data directory (raw zips under data/raw/)")
+    p.add_argument(
+        "--data-dir", default="data", help="Base data directory (raw zips under data/raw/)"
+    )
     p.add_argument("--out-dir", default="data", help="Output directory for core parquet")
     p.add_argument("--featureset", default="core")
-    p.add_argument("--task", action="append", default=None, help="Task(s) to ensure label cols are included")
+    p.add_argument(
+        "--task", action="append", default=None, help="Task(s) to ensure label cols are included"
+    )
     p.add_argument("--weight-col", default="WTFA_A")
     args = p.parse_args(argv)
 

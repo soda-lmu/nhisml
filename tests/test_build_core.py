@@ -2,6 +2,7 @@
 Tests for nhisml.build_core — column collection, basic normalization,
 and end-to-end build_core_year using a synthetic zip file.
 """
+
 from __future__ import annotations
 
 import io
@@ -24,6 +25,7 @@ from nhisml.build_core import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_synthetic_zip(tmp_path: Path, year: int) -> Path:
     """
     Create a minimal adult CSV zip that build_core_year can parse.
@@ -32,20 +34,22 @@ def _make_synthetic_zip(tmp_path: Path, year: int) -> Path:
     # Minimal columns: label cols + weight + a few featureset cols
     n = 100
     rng = np.random.default_rng(42)
-    df = pd.DataFrame({
-        "PHSTAT_A":   rng.choice([1, 2, 3, 4, 5], size=n),
-        "SMKCIGST_A": rng.choice([1, 2, 3, 4], size=n),
-        "SMKNOW_A":   rng.choice([1, 2, 3], size=n),
-        "WTFA_A":     rng.uniform(1000, 5000, size=n),
-        "SEX_A":      rng.choice([1, 2], size=n),
-        "AGEP_A":     rng.integers(18, 80, size=n),
-        "EDUCP_A":    rng.integers(0, 11, size=n),
-        "REGION":     rng.choice([1, 2, 3, 4], size=n),
-        "MARITAL_A":  rng.choice([1, 2, 3, 4, 5, 6], size=n),
-        "HYPEV_A":    rng.choice([1, 2], size=n),
-        "HICOV_A":    rng.choice([1, 2], size=n),
-        "RATCAT_A":   rng.integers(1, 15, size=n),
-    })
+    df = pd.DataFrame(
+        {
+            "PHSTAT_A": rng.choice([1, 2, 3, 4, 5], size=n),
+            "SMKCIGST_A": rng.choice([1, 2, 3, 4], size=n),
+            "SMKNOW_A": rng.choice([1, 2, 3], size=n),
+            "WTFA_A": rng.uniform(1000, 5000, size=n),
+            "SEX_A": rng.choice([1, 2], size=n),
+            "AGEP_A": rng.integers(18, 80, size=n),
+            "EDUCP_A": rng.integers(0, 11, size=n),
+            "REGION": rng.choice([1, 2, 3, 4], size=n),
+            "MARITAL_A": rng.choice([1, 2, 3, 4, 5, 6], size=n),
+            "HYPEV_A": rng.choice([1, 2], size=n),
+            "HICOV_A": rng.choice([1, 2], size=n),
+            "RATCAT_A": rng.integers(1, 15, size=n),
+        }
+    )
 
     yy = str(year)[-2:]
     zip_name = f"adult{yy}csv.zip"
@@ -67,10 +71,12 @@ def _make_synthetic_zip(tmp_path: Path, year: int) -> Path:
 # _collect_required_columns
 # ---------------------------------------------------------------------------
 
+
 class TestCollectRequiredColumns:
     def test_includes_featureset_columns(self):
         cols = _collect_required_columns("core", ["srh_binary"], "WTFA_A")
         from nhisml.featuresets import get_featureset
+
         fs = get_featureset("core")
         for c in fs.all_columns:
             assert c in cols, f"Missing featureset column: {c}"
@@ -90,8 +96,7 @@ class TestCollectRequiredColumns:
         assert "EDUCP_A" in cols
 
     def test_extra_cols_included(self):
-        cols = _collect_required_columns("core", ["srh_binary"], "WTFA_A",
-                                         extra_cols=["MY_EXTRA"])
+        cols = _collect_required_columns("core", ["srh_binary"], "WTFA_A", extra_cols=["MY_EXTRA"])
         assert "MY_EXTRA" in cols
 
     def test_sorted_output(self):
@@ -106,6 +111,7 @@ class TestCollectRequiredColumns:
 # ---------------------------------------------------------------------------
 # _basic_normalize
 # ---------------------------------------------------------------------------
+
 
 class TestBasicNormalize:
     def test_selects_only_requested_cols(self):
@@ -139,6 +145,7 @@ class TestBasicNormalize:
 # build_core_year — end-to-end with synthetic zip
 # ---------------------------------------------------------------------------
 
+
 class TestBuildCoreYear:
     def test_creates_parquet(self, tmp_path):
         _make_synthetic_zip(tmp_path, 2023)
@@ -155,7 +162,9 @@ class TestBuildCoreYear:
     def test_creates_manifest_json(self, tmp_path):
         _make_synthetic_zip(tmp_path, 2023)
         build_core_year(
-            year=2023, data_dir=str(tmp_path), out_dir=str(tmp_path),
+            year=2023,
+            data_dir=str(tmp_path),
+            out_dir=str(tmp_path),
         )
         manifest_path = tmp_path / "core_2023.manifest.json"
         assert manifest_path.exists()
@@ -166,7 +175,9 @@ class TestBuildCoreYear:
     def test_parquet_has_expected_rows(self, tmp_path):
         _make_synthetic_zip(tmp_path, 2023)
         out_path = build_core_year(
-            year=2023, data_dir=str(tmp_path), out_dir=str(tmp_path),
+            year=2023,
+            data_dir=str(tmp_path),
+            out_dir=str(tmp_path),
         )
         df = pd.read_parquet(out_path)
         # The synthetic CSV has 100 rows; all should be retained
@@ -175,7 +186,9 @@ class TestBuildCoreYear:
     def test_parquet_has_label_columns(self, tmp_path):
         _make_synthetic_zip(tmp_path, 2023)
         out_path = build_core_year(
-            year=2023, data_dir=str(tmp_path), out_dir=str(tmp_path),
+            year=2023,
+            data_dir=str(tmp_path),
+            out_dir=str(tmp_path),
             tasks=["srh_binary"],
         )
         df = pd.read_parquet(out_path)
@@ -192,7 +205,9 @@ class TestBuildCoreYear:
     def test_custom_weight_col(self, tmp_path):
         _make_synthetic_zip(tmp_path, 2023)
         out_path = build_core_year(
-            year=2023, data_dir=str(tmp_path), out_dir=str(tmp_path),
+            year=2023,
+            data_dir=str(tmp_path),
+            out_dir=str(tmp_path),
             weight_col="WTFA_A",
         )
         df = pd.read_parquet(out_path)

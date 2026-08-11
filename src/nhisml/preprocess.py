@@ -27,8 +27,12 @@ def normalize_weights(w: pd.Series) -> np.ndarray:
 
 # NHIS missing codes + helpers
 NHIS_MISSING = {
-    7: np.nan, 8: np.nan, 9: np.nan,
-    97: np.nan, 98: np.nan, 99: np.nan,
+    7: np.nan,
+    8: np.nan,
+    9: np.nan,
+    97: np.nan,
+    98: np.nan,
+    99: np.nan,
 }
 
 
@@ -59,6 +63,7 @@ def _as_cat_str(s: pd.Series) -> pd.Series:
     if mask.any():
         s.loc[mask] = s.loc[mask].astype(str)
     return s
+
 
 # Schema object
 @dataclass
@@ -91,6 +96,7 @@ class PrepareFrame(BaseEstimator, TransformerMixin):
       - categorical casting + rare/unseen mapping
       - missingness flags (stable schema: one per ordinal/categorical col)
     """
+
     def __init__(
         self,
         binary_cols: List[str],
@@ -124,7 +130,6 @@ class PrepareFrame(BaseEstimator, TransformerMixin):
         all_cols = list(set(bin_cols + ord_cols + cat_cols))
         df = _map_missing(df, all_cols)
 
-
         for c in ord_cols:
             df[c] = pd.to_numeric(df[c], errors="coerce")
 
@@ -137,7 +142,7 @@ class PrepareFrame(BaseEstimator, TransformerMixin):
         # stable schema: one flag per ordinal/categorical column
         self.added_missing_flags_ = []
         if self.add_missing_flags:
-            for c in (ord_cols + cat_cols):
+            for c in ord_cols + cat_cols:
                 self.added_missing_flags_.append(f"{c}__ismissing")
 
         # learn categorical levels after rare decision
@@ -202,6 +207,7 @@ class PrepareFrame(BaseEstimator, TransformerMixin):
     def output_missing_flags(self) -> List[str]:
         return list(self.added_missing_flags_)
 
+
 # Full preprocessor (UNFITTED)
 def build_preprocessor(
     binary_cols: List[str],
@@ -231,10 +237,12 @@ def build_preprocessor(
 
     ord_pipe = Pipeline([("imp", SimpleImputer(strategy="median")), ("sc", StandardScaler())])
     bin_pipe = Pipeline([("imp", SimpleImputer(strategy="most_frequent"))])
-    cat_pipe = Pipeline([
-        ("imp", SimpleImputer(strategy="most_frequent")),
-        ("ohe", OneHotEncoder(handle_unknown="ignore", sparse_output=True)),
-    ])
+    cat_pipe = Pipeline(
+        [
+            ("imp", SimpleImputer(strategy="most_frequent")),
+            ("ohe", OneHotEncoder(handle_unknown="ignore", sparse_output=True)),
+        ]
+    )
 
     ct = ColumnTransformer(
         transformers=[
@@ -253,7 +261,11 @@ def build_preprocessor(
 
 # Schema extraction after fitting
 def build_schema_from_fitted(preproc: Pipeline) -> PreprocessSchema:
-    if not isinstance(preproc, Pipeline) or "frame" not in preproc.named_steps or "ct" not in preproc.named_steps:
+    if (
+        not isinstance(preproc, Pipeline)
+        or "frame" not in preproc.named_steps
+        or "ct" not in preproc.named_steps
+    ):
         raise ValueError("Expected a fitted Pipeline with 'frame' and 'ct' steps.")
 
     frame: PrepareFrame = preproc.named_steps["frame"]

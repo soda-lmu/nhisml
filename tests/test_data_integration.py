@@ -15,10 +15,10 @@ To run these tests locally after fetching and building the data:
 
 Reference statistics are documented in docs/reference_statistics.md.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -32,13 +32,18 @@ DATA_DIR = Path("data")
 CORE_2023 = DATA_DIR / "core_2023.parquet"
 CORE_2024 = DATA_DIR / "core_2024.parquet"
 
-needs_2023 = pytest.mark.skipif(not CORE_2023.exists(), reason="core_2023.parquet not found — run nhisml fetch/build-core first")
-needs_2024 = pytest.mark.skipif(not CORE_2024.exists(), reason="core_2024.parquet not found — run nhisml fetch/build-core first")
+needs_2023 = pytest.mark.skipif(
+    not CORE_2023.exists(), reason="core_2023.parquet not found — run nhisml fetch/build-core first"
+)
+needs_2024 = pytest.mark.skipif(
+    not CORE_2024.exists(), reason="core_2024.parquet not found — run nhisml fetch/build-core first"
+)
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _load(path: Path) -> pd.DataFrame:
     return pd.read_parquet(path)
@@ -56,6 +61,7 @@ def _weighted_mean(y: pd.Series, w: pd.Series) -> float:
 # ---------------------------------------------------------------------------
 # 2023 core parquet — structural checks
 # ---------------------------------------------------------------------------
+
 
 @needs_2023
 class TestCore2023Structure:
@@ -98,9 +104,7 @@ class TestCore2023Structure:
         """PHSTAT_A must be in 1–5 or NHIS missing codes."""
         s = pd.to_numeric(self.df["PHSTAT_A"], errors="coerce")
         valid_or_missing = s.isin([1, 2, 3, 4, 5, 7, 8, 9]) | s.isna()
-        assert valid_or_missing.all(), (
-            f"Unexpected PHSTAT_A codes: {s[~valid_or_missing].unique()}"
-        )
+        assert valid_or_missing.all(), f"Unexpected PHSTAT_A codes: {s[~valid_or_missing].unique()}"
 
     def test_age_range_plausible(self):
         """AGEP_A should be ≥18 and ≤85 (top-coded) after removing NHIS missing
@@ -109,12 +113,15 @@ class TestCore2023Structure:
         s = pd.to_numeric(self.df["AGEP_A"], errors="coerce")
         s = s[~s.isin(MISSING)].dropna()
         assert (s >= 18).all(), f"Ages below 18 found: {s[s < 18].tolist()[:10]}"
-        assert (s <= 85).all(), f"Ages above 85 found after removing missing codes: {s[s > 85].tolist()[:10]}"
+        assert (
+            s <= 85
+        ).all(), f"Ages above 85 found after removing missing codes: {s[s > 85].tolist()[:10]}"
 
 
 # ---------------------------------------------------------------------------
 # 2024 core parquet — structural checks
 # ---------------------------------------------------------------------------
+
 
 @needs_2024
 class TestCore2024Structure:
@@ -123,9 +130,7 @@ class TestCore2024Structure:
 
     def test_row_count(self):
         """NHIS 2024 Adults public-use file has exactly 32,629 respondents."""
-        assert len(self.df) == 32_629, (
-            f"Expected 32,629 rows; got {len(self.df)}."
-        )
+        assert len(self.df) == 32_629, f"Expected 32,629 rows; got {len(self.df)}."
 
     def test_minimum_column_count(self):
         assert self.df.shape[1] >= 75, f"Expected ≥75 columns; got {self.df.shape[1]}"
@@ -154,6 +159,7 @@ class TestCore2024Structure:
 # 2023 — label prevalence checks
 # ---------------------------------------------------------------------------
 
+
 @needs_2023
 class TestCore2023Prevalence:
     def setup_method(self):
@@ -181,9 +187,9 @@ class TestCore2023Prevalence:
         fallback = pd.to_numeric(self.df.get("SMKNOW_A"), errors="coerce").isin([1, 2, 3])
         # Use primary if present, fallback otherwise (mirrors tasks._smoking_current)
         eligible = primary | (~primary & fallback)
-        assert eligible.sum() == 28_481, (
-            f"Expected 28,481 eligible for smoking_current; got {eligible.sum()}."
-        )
+        assert (
+            eligible.sum() == 28_481
+        ), f"Expected 28,481 eligible for smoking_current; got {eligible.sum()}."
 
     def test_srh_unweighted_prevalence(self):
         """
@@ -203,6 +209,7 @@ class TestCore2023Prevalence:
 # 2024 — label prevalence checks
 # ---------------------------------------------------------------------------
 
+
 @needs_2024
 class TestCore2024Prevalence:
     def setup_method(self):
@@ -213,17 +220,15 @@ class TestCore2024Prevalence:
         """32,613 of 32,629 rows should have a valid PHSTAT_A value."""
         s = pd.to_numeric(self.df["PHSTAT_A"], errors="coerce")
         eligible = s.isin([1, 2, 3, 4, 5]).sum()
-        assert eligible == 32_613, (
-            f"Expected 32,613 eligible for SRH; got {eligible}."
-        )
+        assert eligible == 32_613, f"Expected 32,613 eligible for SRH; got {eligible}."
 
     def test_smoking_eligible_count(self):
         """31,876 of 32,629 rows should be eligible for smoking_current."""
         primary = pd.to_numeric(self.df.get("SMKCIGST_A"), errors="coerce").isin([1, 2, 3, 4])
         eligible = primary.sum()
-        assert eligible == 31_876, (
-            f"Expected 31,876 eligible for smoking_current (via SMKCIGST_A); got {eligible}."
-        )
+        assert (
+            eligible == 31_876
+        ), f"Expected 31,876 eligible for smoking_current (via SMKCIGST_A); got {eligible}."
 
     def test_srh_unweighted_prevalence(self):
         """
@@ -288,22 +293,23 @@ class TestCore2024Prevalence:
         s = pd.to_numeric(self.df["SEX_A"], errors="coerce")
         valid = s.isin([1, 2])
         pct_female = float((s[valid] == 2).mean())
-        assert 0.49 <= pct_female <= 0.55, (
-            f"Female proportion 2024: {pct_female:.3f} is outside expected [0.49, 0.55]."
-        )
+        assert (
+            0.49 <= pct_female <= 0.55
+        ), f"Female proportion 2024: {pct_female:.3f} is outside expected [0.49, 0.55]."
 
     def test_region_codes_all_present(self):
         """All four NCHS regions (1=Northeast, 2=Midwest, 3=South, 4=West) should appear."""
         s = pd.to_numeric(self.df["REGION"], errors="coerce")
         present = set(s.dropna().astype(int).unique())
-        assert {1, 2, 3, 4}.issubset(present), (
-            f"Not all NCHS regions present. Found: {sorted(present)}"
-        )
+        assert {1, 2, 3, 4}.issubset(
+            present
+        ), f"Not all NCHS regions present. Found: {sorted(present)}"
 
 
 # ---------------------------------------------------------------------------
 # Cross-year consistency
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.skipif(
     not CORE_2023.exists() or not CORE_2024.exists(),
@@ -316,14 +322,23 @@ class TestCrossYearConsistency:
 
     def test_2024_larger_than_2023(self):
         """NHIS 2024 has more respondents than 2023 (32,629 vs 29,522)."""
-        assert len(self.df24) > len(self.df23), (
-            f"Expected 2024 ({len(self.df24)}) > 2023 ({len(self.df23)})."
-        )
+        assert len(self.df24) > len(
+            self.df23
+        ), f"Expected 2024 ({len(self.df24)}) > 2023 ({len(self.df23)})."
 
     def test_shared_columns_present_in_both(self):
         """Core demographic and label columns should exist in both years."""
-        shared = {"PHSTAT_A", "SMKCIGST_A", "WTFA_A", "SEX_A", "AGEP_A",
-                  "EDUCP_A", "REGION", "HYPEV_A", "HICOV_A"}
+        shared = {
+            "PHSTAT_A",
+            "SMKCIGST_A",
+            "WTFA_A",
+            "SEX_A",
+            "AGEP_A",
+            "EDUCP_A",
+            "REGION",
+            "HYPEV_A",
+            "HICOV_A",
+        }
         missing_23 = shared - set(self.df23.columns)
         missing_24 = shared - set(self.df24.columns)
         assert not missing_23, f"Missing from 2023: {missing_23}"

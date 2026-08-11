@@ -1,6 +1,7 @@
 """
 Tests for nhisml.featuresets — feature set registry and FeatureSet dataclass.
 """
+
 from __future__ import annotations
 
 import pytest

@@ -119,14 +119,23 @@ def _make_estimator(model_name: str) -> Tuple[Any, str]:
 
 def cli(argv: Optional[list[str]] = None) -> None:
     p = argparse.ArgumentParser("nhisml train")
-    p.add_argument("--in", dest="core_path", required=True, help="Path to core parquet (e.g., data/core_2023.parquet)")
+    p.add_argument(
+        "--in",
+        dest="core_path",
+        required=True,
+        help="Path to core parquet (e.g., data/core_2023.parquet)",
+    )
     p.add_argument("--task", default="srh_binary", help="Task name (srh_binary, smoking_current)")
     p.add_argument("--featureset", default="core", help="Featureset name")
     p.add_argument("--model", default="lasso", help="Model: lasso | rf")
     p.add_argument("--run-dir", default="runs", help="Base directory for run outputs")
-    p.add_argument("--calibrate", action="store_true", help="Fit calibrated variant using OOF predictions")
+    p.add_argument(
+        "--calibrate", action="store_true", help="Fit calibrated variant using OOF predictions"
+    )
     p.add_argument("--weight-col", default="WTFA_A", help="Weight column name in core parquet")
-    p.add_argument("--rare-min-count", type=int, default=50, help="Rare category minimum count for bucketing")
+    p.add_argument(
+        "--rare-min-count", type=int, default=50, help="Rare category minimum count for bucketing"
+    )
     args = p.parse_args(argv)
 
     task = make_task(args.task)
@@ -153,7 +162,9 @@ def cli(argv: Optional[list[str]] = None) -> None:
     y = np.asarray(y)[eligible].astype(int)
 
     if len(core) == 0:
-        raise ValueError(f"No eligible rows for task '{task.name}'. Check label coding and required columns.")
+        raise ValueError(
+            f"No eligible rows for task '{task.name}'. Check label coding and required columns."
+        )
 
     # Weights (default: WTFA_A; fallback: uniform)
     used_weights = args.weight_col in core.columns

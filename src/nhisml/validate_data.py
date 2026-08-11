@@ -9,6 +9,7 @@ running ``nhisml fetch`` and ``nhisml build-core``.
 Reference statistics were derived from the official CDC/NCHS NHIS
 Adults public-use files and are documented in ``docs/reference_statistics.md``.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -24,22 +25,30 @@ import pandas as pd
 # Reference statistics (ground truth)
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class YearRef:
     """Known reference statistics for one NHIS Adults survey year."""
+
     year: int
     n_rows: int
     n_cols_min: int
     srh_eligible: int
-    smoking_eligible: int          # via primary SMKCIGST_A column
+    smoking_eligible: int  # via primary SMKCIGST_A column
     srh_pos_rate_unweighted: float  # fraction with PHSTAT_A in {4,5}
-    srh_pos_rate_weighted: float    # survey-weighted equivalent
+    srh_pos_rate_weighted: float  # survey-weighted equivalent
     smoking_pos_rate_unweighted: float  # fraction with SMKCIGST_A in {1,2}
     smoking_pos_rate_weighted: float
     required_cols: Tuple[str, ...] = (
-        "PHSTAT_A", "SMKCIGST_A", "WTFA_A", "SEX_A", "AGEP_A", "EDUCP_A", "REGION",
+        "PHSTAT_A",
+        "SMKCIGST_A",
+        "WTFA_A",
+        "SEX_A",
+        "AGEP_A",
+        "EDUCP_A",
+        "REGION",
     )
-    tolerance_pp: float = 0.01   # ±1 percentage point tolerance on rates
+    tolerance_pp: float = 0.01  # ±1 percentage point tolerance on rates
 
 
 REFERENCE: Dict[int, YearRef] = {
@@ -49,8 +58,8 @@ REFERENCE: Dict[int, YearRef] = {
         n_cols_min=64,
         srh_eligible=29_502,
         smoking_eligible=28_481,
-        srh_pos_rate_unweighted=0.157,   # ±1 pp tolerance applied
-        srh_pos_rate_weighted=0.151,     # observed from core_2023.parquet
+        srh_pos_rate_unweighted=0.157,  # ±1 pp tolerance applied
+        srh_pos_rate_weighted=0.151,  # observed from core_2023.parquet
         smoking_pos_rate_unweighted=0.115,
         smoking_pos_rate_weighted=0.105,
     ),
@@ -71,6 +80,7 @@ REFERENCE: Dict[int, YearRef] = {
 # ---------------------------------------------------------------------------
 # Check result dataclass
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class CheckResult:
@@ -136,15 +146,22 @@ def _weighted_mean(y: pd.Series, w: pd.Series) -> float:
     return float(np.average(y[mask].astype(float), weights=w[mask]))
 
 
-def _check(name: str, condition: bool, message: str,
-           expected: Optional[str] = None, actual: Optional[str] = None) -> CheckResult:
-    return CheckResult(name=name, passed=bool(condition), message=message,
-                       expected=expected, actual=actual)
+def _check(
+    name: str,
+    condition: bool,
+    message: str,
+    expected: Optional[str] = None,
+    actual: Optional[str] = None,
+) -> CheckResult:
+    return CheckResult(
+        name=name, passed=bool(condition), message=message, expected=expected, actual=actual
+    )
 
 
 # ---------------------------------------------------------------------------
 # Core validation logic
 # ---------------------------------------------------------------------------
+
 
 def validate_core_year(
     year: int,
@@ -199,48 +216,58 @@ def validate_core_year(
     tol = ref.tolerance_pp
 
     # ---- Structural checks -----------------------------------------------
-    add(_check(
-        "Row count",
-        len(df) == ref.n_rows,
-        "Row count mismatch — wrong year's data may have been built here.",
-        expected=str(ref.n_rows),
-        actual=str(len(df)),
-    ))
+    add(
+        _check(
+            "Row count",
+            len(df) == ref.n_rows,
+            "Row count mismatch — wrong year's data may have been built here.",
+            expected=str(ref.n_rows),
+            actual=str(len(df)),
+        )
+    )
 
-    add(_check(
-        "Minimum column count",
-        df.shape[1] >= ref.n_cols_min,
-        "Fewer columns than expected; featureset or task columns may be missing.",
-        expected=f"≥{ref.n_cols_min}",
-        actual=str(df.shape[1]),
-    ))
+    add(
+        _check(
+            "Minimum column count",
+            df.shape[1] >= ref.n_cols_min,
+            "Fewer columns than expected; featureset or task columns may be missing.",
+            expected=f"≥{ref.n_cols_min}",
+            actual=str(df.shape[1]),
+        )
+    )
 
     missing_cols = [c for c in ref.required_cols if c not in df.columns]
-    add(_check(
-        "Required columns present",
-        len(missing_cols) == 0,
-        f"Missing columns: {missing_cols}",
-        expected="all present",
-        actual=f"missing: {missing_cols}" if missing_cols else "all present",
-    ))
+    add(
+        _check(
+            "Required columns present",
+            len(missing_cols) == 0,
+            f"Missing columns: {missing_cols}",
+            expected="all present",
+            actual=f"missing: {missing_cols}" if missing_cols else "all present",
+        )
+    )
 
     # ---- Survey weight checks -------------------------------------------
     w = _to_num(df["WTFA_A"]) if "WTFA_A" in df.columns else pd.Series(dtype=float)
     if len(w):
-        add(_check(
-            "Survey weights: no missing values",
-            int(w.isna().sum()) == 0,
-            f"{int(w.isna().sum())} missing WTFA_A values found.",
-            expected="0 missing",
-            actual=str(int(w.isna().sum())),
-        ))
-        add(_check(
-            "Survey weights: all positive",
-            bool((w > 0).all()),
-            f"{int((w <= 0).sum())} non-positive weights found.",
-            expected="all > 0",
-            actual=f"{int((w <= 0).sum())} non-positive",
-        ))
+        add(
+            _check(
+                "Survey weights: no missing values",
+                int(w.isna().sum()) == 0,
+                f"{int(w.isna().sum())} missing WTFA_A values found.",
+                expected="0 missing",
+                actual=str(int(w.isna().sum())),
+            )
+        )
+        add(
+            _check(
+                "Survey weights: all positive",
+                bool((w > 0).all()),
+                f"{int((w <= 0).sum())} non-positive weights found.",
+                expected="all > 0",
+                actual=f"{int((w <= 0).sum())} non-positive",
+            )
+        )
 
     # ---- SRH eligibility and prevalence ---------------------------------
     if "PHSTAT_A" in df.columns:
@@ -248,37 +275,43 @@ def validate_core_year(
         eligible_mask = s.isin([1, 2, 3, 4, 5])
         n_eligible = int(eligible_mask.sum())
 
-        add(_check(
-            "SRH eligible count",
-            n_eligible == ref.srh_eligible,
-            f"Expected {ref.srh_eligible} eligible SRH rows; got {n_eligible}. "
-            "Check NHIS missing-code handling.",
-            expected=str(ref.srh_eligible),
-            actual=str(n_eligible),
-        ))
+        add(
+            _check(
+                "SRH eligible count",
+                n_eligible == ref.srh_eligible,
+                f"Expected {ref.srh_eligible} eligible SRH rows; got {n_eligible}. "
+                "Check NHIS missing-code handling.",
+                expected=str(ref.srh_eligible),
+                actual=str(n_eligible),
+            )
+        )
 
         if n_eligible > 0:
             rate_unw = float((s[eligible_mask] >= 4).mean())
             lo, hi = ref.srh_pos_rate_unweighted - tol, ref.srh_pos_rate_unweighted + tol
-            add(_check(
-                f"SRH unweighted prevalence (ref ≈ {ref.srh_pos_rate_unweighted:.1%}, ±{tol:.0%})",
-                lo <= rate_unw <= hi,
-                f"Fair/Poor SRH rate outside expected range [{lo:.3f}, {hi:.3f}].",
-                expected=f"{lo:.3f}–{hi:.3f}",
-                actual=f"{rate_unw:.4f}",
-            ))
+            add(
+                _check(
+                    f"SRH unweighted prevalence (ref ≈ {ref.srh_pos_rate_unweighted:.1%}, ±{tol:.0%})",
+                    lo <= rate_unw <= hi,
+                    f"Fair/Poor SRH rate outside expected range [{lo:.3f}, {hi:.3f}].",
+                    expected=f"{lo:.3f}–{hi:.3f}",
+                    actual=f"{rate_unw:.4f}",
+                )
+            )
 
             if len(w) == len(df):
                 rate_w = _weighted_mean((s[eligible_mask] >= 4).astype(float), w[eligible_mask])
                 lo_w = ref.srh_pos_rate_weighted - tol
                 hi_w = ref.srh_pos_rate_weighted + tol
-                add(_check(
-                    f"SRH weighted prevalence (ref ≈ {ref.srh_pos_rate_weighted:.1%}, ±{tol:.0%})",
-                    lo_w <= rate_w <= hi_w,
-                    f"Survey-weighted Fair/Poor SRH rate outside [{lo_w:.3f}, {hi_w:.3f}].",
-                    expected=f"{lo_w:.3f}–{hi_w:.3f}",
-                    actual=f"{rate_w:.4f}",
-                ))
+                add(
+                    _check(
+                        f"SRH weighted prevalence (ref ≈ {ref.srh_pos_rate_weighted:.1%}, ±{tol:.0%})",
+                        lo_w <= rate_w <= hi_w,
+                        f"Survey-weighted Fair/Poor SRH rate outside [{lo_w:.3f}, {hi_w:.3f}].",
+                        expected=f"{lo_w:.3f}–{hi_w:.3f}",
+                        actual=f"{rate_w:.4f}",
+                    )
+                )
 
     # ---- Smoking eligibility and prevalence -----------------------------
     if "SMKCIGST_A" in df.columns:
@@ -286,74 +319,86 @@ def validate_core_year(
         eligible_mask = s.isin([1, 2, 3, 4])
         n_eligible = int(eligible_mask.sum())
 
-        add(_check(
-            "Smoking eligible count (SMKCIGST_A)",
-            n_eligible == ref.smoking_eligible,
-            f"Expected {ref.smoking_eligible}; got {n_eligible}.",
-            expected=str(ref.smoking_eligible),
-            actual=str(n_eligible),
-        ))
+        add(
+            _check(
+                "Smoking eligible count (SMKCIGST_A)",
+                n_eligible == ref.smoking_eligible,
+                f"Expected {ref.smoking_eligible}; got {n_eligible}.",
+                expected=str(ref.smoking_eligible),
+                actual=str(n_eligible),
+            )
+        )
 
         if n_eligible > 0:
             rate_unw = float(s[eligible_mask].isin([1, 2]).mean())
             lo = ref.smoking_pos_rate_unweighted - tol
             hi = ref.smoking_pos_rate_unweighted + tol
-            add(_check(
-                f"Smoking unweighted prevalence (ref ≈ {ref.smoking_pos_rate_unweighted:.1%}, ±{tol:.0%})",
-                lo <= rate_unw <= hi,
-                f"Current smoking rate outside [{lo:.3f}, {hi:.3f}].",
-                expected=f"{lo:.3f}–{hi:.3f}",
-                actual=f"{rate_unw:.4f}",
-            ))
+            add(
+                _check(
+                    f"Smoking unweighted prevalence (ref ≈ {ref.smoking_pos_rate_unweighted:.1%}, ±{tol:.0%})",
+                    lo <= rate_unw <= hi,
+                    f"Current smoking rate outside [{lo:.3f}, {hi:.3f}].",
+                    expected=f"{lo:.3f}–{hi:.3f}",
+                    actual=f"{rate_unw:.4f}",
+                )
+            )
 
             if len(w) == len(df):
                 y_sm = s[eligible_mask].isin([1, 2]).astype(float)
                 rate_w = _weighted_mean(y_sm, w[eligible_mask])
                 lo_w = ref.smoking_pos_rate_weighted - tol
                 hi_w = ref.smoking_pos_rate_weighted + tol
-                add(_check(
-                    f"Smoking weighted prevalence (ref ≈ {ref.smoking_pos_rate_weighted:.1%}, ±{tol:.0%})",
-                    lo_w <= rate_w <= hi_w,
-                    f"Survey-weighted smoking rate outside [{lo_w:.3f}, {hi_w:.3f}].",
-                    expected=f"{lo_w:.3f}–{hi_w:.3f}",
-                    actual=f"{rate_w:.4f}",
-                ))
+                add(
+                    _check(
+                        f"Smoking weighted prevalence (ref ≈ {ref.smoking_pos_rate_weighted:.1%}, ±{tol:.0%})",
+                        lo_w <= rate_w <= hi_w,
+                        f"Survey-weighted smoking rate outside [{lo_w:.3f}, {hi_w:.3f}].",
+                        expected=f"{lo_w:.3f}–{hi_w:.3f}",
+                        actual=f"{rate_w:.4f}",
+                    )
+                )
 
     # ---- Demographic plausibility ---------------------------------------
     if "SEX_A" in df.columns:
         s = _to_num(df["SEX_A"])
         valid = s.isin([1, 2])
         pct_female = float((s[valid] == 2).mean())
-        add(_check(
-            "Sex distribution plausible (49–55% female)",
-            0.49 <= pct_female <= 0.55,
-            f"Female proportion {pct_female:.3f} outside [0.49, 0.55].",
-            expected="0.49–0.55",
-            actual=f"{pct_female:.4f}",
-        ))
+        add(
+            _check(
+                "Sex distribution plausible (49–55% female)",
+                0.49 <= pct_female <= 0.55,
+                f"Female proportion {pct_female:.3f} outside [0.49, 0.55].",
+                expected="0.49–0.55",
+                actual=f"{pct_female:.4f}",
+            )
+        )
 
     if "REGION" in df.columns:
         regions = set(_to_num(df["REGION"]).dropna().astype(int).unique())
-        add(_check(
-            "All four NCHS regions present",
-            {1, 2, 3, 4}.issubset(regions),
-            f"Missing region codes: {sorted({1,2,3,4} - regions)}.",
-            expected="{1, 2, 3, 4}",
-            actual=str(sorted(regions)),
-        ))
+        add(
+            _check(
+                "All four NCHS regions present",
+                {1, 2, 3, 4}.issubset(regions),
+                f"Missing region codes: {sorted({1,2,3,4} - regions)}.",
+                expected="{1, 2, 3, 4}",
+                actual=str(sorted(regions)),
+            )
+        )
 
     if "AGEP_A" in df.columns:
         # Strip NHIS missing codes (97=Refused, 98=Not ascertained, 99=Don't know)
         # before range check — these are not actual ages.
         ages = _to_num(df["AGEP_A"])
         ages = ages[~ages.isin(NHIS_MISSING_CODES)].dropna()
-        add(_check(
-            "Age range plausible (18–85 top-coded, excl. missing codes 97–99)",
-            bool((ages >= 18).all() and (ages <= 85).all()),
-            "Ages outside [18, 85] found after removing missing codes.",
-            expected="18–85",
-            actual=f"min={ages.min():.0f} max={ages.max():.0f}",
-        ))
+        add(
+            _check(
+                "Age range plausible (18–85 top-coded, excl. missing codes 97–99)",
+                bool((ages >= 18).all() and (ages <= 85).all()),
+                "Ages outside [18, 85] found after removing missing codes.",
+                expected="18–85",
+                actual=f"min={ages.min():.0f} max={ages.max():.0f}",
+            )
+        )
 
     return report
 
@@ -361,6 +406,7 @@ def validate_core_year(
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
+
 
 def cli(argv: Optional[list[str]] = None) -> None:
     p = argparse.ArgumentParser(
@@ -371,15 +417,21 @@ def cli(argv: Optional[list[str]] = None) -> None:
         ),
     )
     p.add_argument(
-        "--year", type=int, action="append", required=True,
+        "--year",
+        type=int,
+        action="append",
+        required=True,
         help="Year(s) to validate, e.g. --year 2023 --year 2024",
     )
     p.add_argument(
-        "--data-dir", default="data",
+        "--data-dir",
+        default="data",
         help="Directory containing core_YYYY.parquet files (default: data/)",
     )
     p.add_argument(
-        "--verbose", "-v", action="store_true",
+        "--verbose",
+        "-v",
+        action="store_true",
         help="Show expected/actual values for passing checks too",
     )
     args = p.parse_args(argv)
@@ -403,4 +455,5 @@ def cli(argv: Optional[list[str]] = None) -> None:
             any_failed = True
 
     import sys
+
     sys.exit(1 if any_failed else 0)

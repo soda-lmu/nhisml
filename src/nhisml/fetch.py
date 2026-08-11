@@ -31,7 +31,10 @@ def download_file(url: str, out_path: Path, force: bool = False, timeout: int = 
         total = int(r.headers.get("Content-Length", "0")) or None
         tmp_path = out_path.with_suffix(out_path.suffix + ".part")
 
-        with open(tmp_path, "wb") as f, tqdm(total=total, unit="B", unit_scale=True, unit_divisor=1024) as bar:
+        with (
+            open(tmp_path, "wb") as f,
+            tqdm(total=total, unit="B", unit_scale=True, unit_divisor=1024) as bar,
+        ):
             for chunk in r.iter_content(chunk_size=1024 * 1024):
                 if chunk:
                     f.write(chunk)
@@ -43,7 +46,9 @@ def download_file(url: str, out_path: Path, force: bool = False, timeout: int = 
     return out_path
 
 
-def fetch_year(year: int, data_dir: str = "data", force: bool = False, url: Optional[str] = None) -> Path:
+def fetch_year(
+    year: int, data_dir: str = "data", force: bool = False, url: Optional[str] = None
+) -> Path:
     if url is None:
         url = NHIS_URLS.get(year)
     if not url:
@@ -55,10 +60,18 @@ def fetch_year(year: int, data_dir: str = "data", force: bool = False, url: Opti
 
 def cli(argv: Optional[list[str]] = None) -> None:
     p = argparse.ArgumentParser("nhisml fetch")
-    p.add_argument("--year", type=int, action="append", required=True, help="Year(s) to fetch, e.g. --year 2023 --year 2024")
+    p.add_argument(
+        "--year",
+        type=int,
+        action="append",
+        required=True,
+        help="Year(s) to fetch, e.g. --year 2023 --year 2024",
+    )
     p.add_argument("--data-dir", default="data", help="Base data directory (default: data/)")
     p.add_argument("--force", action="store_true", help="Re-download even if cached")
-    p.add_argument("--url", default=None, help="Override download URL (applies only if one year is provided)")
+    p.add_argument(
+        "--url", default=None, help="Override download URL (applies only if one year is provided)"
+    )
     args = p.parse_args(argv)
 
     if args.url and len(args.year) != 1:
