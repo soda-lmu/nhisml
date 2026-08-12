@@ -14,16 +14,18 @@ Please open a GitHub issue and include:
 
 ```bash
 git clone https://github.com/soda-lmu/nhisml.git
-cd nhisml
-pip install -e ".[dev]"
+cd nhis-ml-benchmark
+uv sync --extra dev
 ```
 
-This installs the package in editable mode along with `pytest` and `ruff`.
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) first if it is not
+already available. `uv sync --extra dev` creates a project virtual environment and installs
+the package in editable mode along with `pytest` and `ruff`.
 
 ## Running the Tests
 
 ```bash
-pytest tests/ -v
+uv run --extra dev pytest tests/ -v
 ```
 
 All tests must pass before a pull request can be merged. Tests use only synthetic data; no NHIS data download is required.
@@ -33,7 +35,22 @@ All tests must pass before a pull request can be merged. Tests use only syntheti
 Code is linted with [ruff](https://docs.astral.sh/ruff/) with a line length of 100 characters. Before opening a pull request, please run:
 
 ```bash
-ruff check src/nhisml/
+uv run --extra dev ruff check . --fix
+uv run --extra dev ruff format
+```
+
+## Documentation
+
+Preview the documentation site locally:
+
+```bash
+uv run --extra dev mkdocs serve
+```
+
+Build the site with strict validation before submitting documentation changes:
+
+```bash
+uv run --extra dev mkdocs build --strict
 ```
 
 ## Adding a New Prediction Task
@@ -91,9 +108,9 @@ ruff check src/nhisml/
 
 ## Pull Request Checklist
 
-- [ ] All existing tests pass (`pytest tests/`)
+- [ ] All existing tests pass (`uv run --extra dev pytest tests/`)
 - [ ] New functionality has corresponding tests
-- [ ] `ruff check src/nhisml/` passes with no errors
+- [ ] `uv run --extra dev ruff check .` passes with no errors
 - [ ] Docstrings are present on new public functions and classes
 - [ ] The `SOURCES.txt` and egg-info do not need to be updated manually — they are generated at build time
 
