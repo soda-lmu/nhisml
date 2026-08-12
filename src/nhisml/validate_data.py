@@ -111,11 +111,11 @@ class ValidationReport:
 
     def print_report(self, verbose: bool = False) -> None:
         status = "PASS" if self.all_passed else "FAIL"
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"  nhisml validate-data — NHIS Adults {self.year}")
         print(f"  File : {self.path}")
         print(f"  Result: {status}  ({self.n_passed} passed, {self.n_failed} failed)")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         for c in self.checks:
             icon = "✓" if c.passed else "✗"
             print(f"  {icon} {c.name}")
@@ -379,7 +379,7 @@ def validate_core_year(
             _check(
                 "All four NCHS regions present",
                 {1, 2, 3, 4}.issubset(regions),
-                f"Missing region codes: {sorted({1,2,3,4} - regions)}.",
+                f"Missing region codes: {sorted({1, 2, 3, 4} - regions)}.",
                 expected="{1, 2, 3, 4}",
                 actual=str(sorted(regions)),
             )

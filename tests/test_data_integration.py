@@ -113,9 +113,9 @@ class TestCore2023Structure:
         s = pd.to_numeric(self.df["AGEP_A"], errors="coerce")
         s = s[~s.isin(MISSING)].dropna()
         assert (s >= 18).all(), f"Ages below 18 found: {s[s < 18].tolist()[:10]}"
-        assert (
-            s <= 85
-        ).all(), f"Ages above 85 found after removing missing codes: {s[s > 85].tolist()[:10]}"
+        assert (s <= 85).all(), (
+            f"Ages above 85 found after removing missing codes: {s[s > 85].tolist()[:10]}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -187,9 +187,9 @@ class TestCore2023Prevalence:
         fallback = pd.to_numeric(self.df.get("SMKNOW_A"), errors="coerce").isin([1, 2, 3])
         # Use primary if present, fallback otherwise (mirrors tasks._smoking_current)
         eligible = primary | (~primary & fallback)
-        assert (
-            eligible.sum() == 28_481
-        ), f"Expected 28,481 eligible for smoking_current; got {eligible.sum()}."
+        assert eligible.sum() == 28_481, (
+            f"Expected 28,481 eligible for smoking_current; got {eligible.sum()}."
+        )
 
     def test_srh_unweighted_prevalence(self):
         """
@@ -226,9 +226,9 @@ class TestCore2024Prevalence:
         """31,876 of 32,629 rows should be eligible for smoking_current."""
         primary = pd.to_numeric(self.df.get("SMKCIGST_A"), errors="coerce").isin([1, 2, 3, 4])
         eligible = primary.sum()
-        assert (
-            eligible == 31_876
-        ), f"Expected 31,876 eligible for smoking_current (via SMKCIGST_A); got {eligible}."
+        assert eligible == 31_876, (
+            f"Expected 31,876 eligible for smoking_current (via SMKCIGST_A); got {eligible}."
+        )
 
     def test_srh_unweighted_prevalence(self):
         """
@@ -293,17 +293,17 @@ class TestCore2024Prevalence:
         s = pd.to_numeric(self.df["SEX_A"], errors="coerce")
         valid = s.isin([1, 2])
         pct_female = float((s[valid] == 2).mean())
-        assert (
-            0.49 <= pct_female <= 0.55
-        ), f"Female proportion 2024: {pct_female:.3f} is outside expected [0.49, 0.55]."
+        assert 0.49 <= pct_female <= 0.55, (
+            f"Female proportion 2024: {pct_female:.3f} is outside expected [0.49, 0.55]."
+        )
 
     def test_region_codes_all_present(self):
         """All four NCHS regions (1=Northeast, 2=Midwest, 3=South, 4=West) should appear."""
         s = pd.to_numeric(self.df["REGION"], errors="coerce")
         present = set(s.dropna().astype(int).unique())
-        assert {1, 2, 3, 4}.issubset(
-            present
-        ), f"Not all NCHS regions present. Found: {sorted(present)}"
+        assert {1, 2, 3, 4}.issubset(present), (
+            f"Not all NCHS regions present. Found: {sorted(present)}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -322,9 +322,9 @@ class TestCrossYearConsistency:
 
     def test_2024_larger_than_2023(self):
         """NHIS 2024 has more respondents than 2023 (32,629 vs 29,522)."""
-        assert len(self.df24) > len(
-            self.df23
-        ), f"Expected 2024 ({len(self.df24)}) > 2023 ({len(self.df23)})."
+        assert len(self.df24) > len(self.df23), (
+            f"Expected 2024 ({len(self.df24)}) > 2023 ({len(self.df23)})."
+        )
 
     def test_shared_columns_present_in_both(self):
         """Core demographic and label columns should exist in both years."""
