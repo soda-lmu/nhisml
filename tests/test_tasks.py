@@ -135,9 +135,7 @@ class TestSmokingCurrent:
         t = make_task("smoking_current")
         y, eligible = t.make_labels(df)
         # rows 1 and 2 (SMKCIGST_A 7, 9) are not in {1,2,3,4}
-        assert eligible[0] is True
-        assert eligible[1] is False
-        assert eligible[2] is False
+        assert eligible.tolist() == [True, False, False]
 
     def test_fallback_column_used_when_primary_absent(self):
         """Without SMKCIGST_A, falls back to SMKNOW_A: 1,2->1; 3->0."""
