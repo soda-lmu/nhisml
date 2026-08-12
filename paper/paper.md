@@ -261,4 +261,4 @@ Joint Program in Survey Methodology (JPSM) and researchers from LMU
 Munich. We are not affiliated with the CDC, NCHS, or the NHIS.
 
 [^1]: `nhisml` is available on PyPI (<https://pypi.org/project/nhisml/>)
-    and GitHub (<https://github.com/LuguReign/nhis-ml-benchmark>).
+    and GitHub (<https://github.com/soda-lmu/nhisml>).

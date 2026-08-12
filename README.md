@@ -1,6 +1,6 @@
 # nhisml
 
-[![Tests](https://github.com/LuguReign/nhis-ml-benchmark/actions/workflows/tests.yml/badge.svg)](https://github.com/LuguReign/nhis-ml-benchmark/actions/workflows/tests.yml)
+[![Tests](https://github.com/soda-lmu/nhisml/actions/workflows/tests.yml/badge.svg)](https://github.com/soda-lmu/nhisml/actions/workflows/tests.yml)
 [![PyPI version](https://badge.fury.io/py/nhisml.svg)](https://badge.fury.io/py/nhisml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
@@ -37,7 +37,7 @@ pip install "nhisml[viz]"
 For development and testing:
 
 ```bash
-git clone https://github.com/LuguReign/nhis-ml-benchmark.git
+git clone https://github.com/soda-lmu/nhisml.git
 cd nhis-ml-benchmark
 pip install -e ".[dev]"
 ```
@@ -191,7 +191,7 @@ Contributions are welcome. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
   author  = {Lugu Reign, Nicholas and Lamoreaux, Catherine and Simson, Jan and Kern, Christoph and Kreuter, Frauke},
   year    = {2026},
   version = {0.5.2},
-  url     = {https://github.com/LuguReign/nhis-ml-benchmark}
+  url     = {https://github.com/soda-lmu/nhisml}
 }
 ```
 
