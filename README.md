@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 
-**nhisml** is a survey-aware machine learning toolkit for the National Health Interview Survey (NHIS) Adults public-use microdata. It provides a reproducible, end-to-end pipeline — from raw data download through model training, cross-year evaluation, and subgroup fairness analysis — designed for researchers in public health, epidemiology, and health services research.
+**nhisml** is a survey-aware machine learning toolkit for the [National Health Interview Survey (NHIS)](https://www.cdc.gov/nchs/nhis/index.html) Adults public-use microdata. It provides a reproducible, end-to-end pipeline — from raw data download through model training, cross-year evaluation, and subgroup fairness analysis — designed for researchers in public health, epidemiology, and health services research.
 
 ## Statement of Need
 
