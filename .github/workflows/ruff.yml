@@ -7,9 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/ruff-action@v1
-        name: Lint
-      - uses: astral-sh/ruff-action@v1
-        name: Format
-        with:
-          args: "format --check"
+      - uses: astral-sh/setup-uv@v5
+        name: Set up uv
+      - name: Lint
+        run: uv run --extra dev ruff check .
+      - name: Format
+        run: uv run --extra dev ruff format --check
