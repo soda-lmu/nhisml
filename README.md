@@ -1,4 +1,4 @@
-<img src="assets/logo.svg" alt="nhisml logo" width="200" align="right" />
+<img src="https://raw.githubusercontent.com/soda-lmu/nhisml/main/docs/assets/logo.svg" alt="nhisml logo" width="200" align="right" />
 
 # nhisml
 
