@@ -44,13 +44,13 @@ uv run --extra dev ruff format
 Preview the documentation site locally:
 
 ```bash
-uv run --extra dev mkdocs serve
+uv run --extra dev zensical serve
 ```
 
-Build the site with strict validation before submitting documentation changes:
+Build the site before submitting documentation changes:
 
 ```bash
-uv run --extra dev mkdocs build --strict
+uv run --extra dev zensical build
 ```
 
 ## Adding a New Prediction Task
