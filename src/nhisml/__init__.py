@@ -45,8 +45,6 @@ from .utils import (
     weighted_threshold_via_oof,
 )
 
-__version__ = "0.5.1"
-
 __all__ = [
     # tasks
     "Task",
@@ -71,6 +69,4 @@ __all__ = [
     "oof_proba",
     "pick_threshold_max_f1",
     "weighted_threshold_via_oof",
-    # version
-    "__version__",
 ]

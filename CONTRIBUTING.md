@@ -6,7 +6,7 @@ Thank you for your interest in contributing. This document covers how to report 
 
 Please open a GitHub issue and include:
 - A minimal, reproducible example if possible
-- The nhisml version (`python -c "import nhisml; print(nhisml.__version__)"`)
+- The nhisml version (`python -c "from importlib.metadata import version; print(version('nhisml'))"`)
 - Python version and OS
 - Any relevant error messages or stack traces
 
