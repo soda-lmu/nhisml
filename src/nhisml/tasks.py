@@ -9,13 +9,15 @@ import pandas as pd
 
 @dataclass(frozen=True)
 class Task:
-    """
-    Definition of a prediction task.
+    """Definition of a prediction task.
 
-    - required_cols: columns that MUST be present in the core parquet
-      for this task to be valid.
-    - make_labels: function returning (y, eligible_mask).
-      eligible_mask can be None to indicate all rows eligible.
+    Args:
+        name: Stable task identifier used by the CLI and API.
+        problem_type: Prediction type; currently always ``"binary"``.
+        description: Human-readable definition of the target.
+        required_cols: Core-dataset columns required to construct labels.
+        make_labels: Callable returning ``(labels, eligible_mask)``. An
+            eligibility mask of ``None`` means every row is eligible.
     """
 
     name: str
@@ -105,6 +107,14 @@ _TASKS = {
 
 # Public API
 def make_task(name: str) -> Task:
+    """Return the registered prediction task named ``name``.
+
+    Args:
+        name: Task identifier, such as ``"srh_binary"``.
+
+    Raises:
+        ValueError: If no task is registered under ``name``.
+    """
     try:
         return _TASKS[name]
     except KeyError:
@@ -112,4 +122,5 @@ def make_task(name: str) -> Task:
 
 
 def list_tasks() -> List[str]:
+    """Return registered task identifiers in alphabetical order."""
     return sorted(_TASKS.keys())

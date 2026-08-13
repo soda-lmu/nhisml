@@ -40,7 +40,7 @@ For development and testing:
 
 ```bash
 git clone https://github.com/soda-lmu/nhisml.git
-cd nhis-ml-benchmark
+cd nhisml
 pip install -e ".[dev]"
 ```
 

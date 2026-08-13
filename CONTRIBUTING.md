@@ -41,16 +41,23 @@ uv run --extra dev ruff format
 
 ## Documentation
 
+Zensical and the docstring renderer require Python 3.10 or newer. Sync the
+development environment with Python 3.10 when working on documentation:
+
+```bash
+uv sync --extra dev --python 3.10
+```
+
 Preview the documentation site locally:
 
 ```bash
-uv run --extra dev zensical serve
+uv run --python 3.10 zensical serve
 ```
 
 Build the site before submitting documentation changes:
 
 ```bash
-uv run --extra dev zensical build
+uv run --python 3.10 zensical build
 ```
 
 ## Adding a New Prediction Task

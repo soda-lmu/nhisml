@@ -4,6 +4,11 @@ from typing import Dict, List
 
 @dataclass(frozen=True)
 class FeatureSet:
+    """Named groups of predictor columns for an NHIS modeling workflow.
+
+    The groups determine how the preprocessing pipeline treats each column.
+    """
+
     name: str
     description: str
     binary_12: List[str]
@@ -113,6 +118,14 @@ _register(
 
 # Public API
 def get_featureset(name: str = "core") -> FeatureSet:
+    """Return the registered feature set named ``name``.
+
+    Args:
+        name: Feature-set identifier. Defaults to ``"core"``.
+
+    Raises:
+        ValueError: If no feature set is registered under ``name``.
+    """
     try:
         return _FEATURESETS[name]
     except KeyError:
@@ -122,4 +135,5 @@ def get_featureset(name: str = "core") -> FeatureSet:
 
 
 def list_featuresets() -> List[str]:
+    """Return registered feature-set identifiers in alphabetical order."""
     return sorted(_FEATURESETS.keys())

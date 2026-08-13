@@ -49,6 +49,20 @@ def download_file(url: str, out_path: Path, force: bool = False, timeout: int = 
 def fetch_year(
     year: int, data_dir: str = "data", force: bool = False, url: Optional[str] = None
 ) -> Path:
+    """Download and cache one year of NHIS Adults public-use data.
+
+    Args:
+        year: Survey year with a configured source URL.
+        data_dir: Directory in which to cache the raw archive.
+        force: Re-download an archive that is already cached.
+        url: Optional source URL override.
+
+    Returns:
+        Path to the downloaded or cached ZIP archive.
+
+    Raises:
+        ValueError: If no URL is configured for ``year`` and none is supplied.
+    """
     if url is None:
         url = NHIS_URLS.get(year)
     if not url:

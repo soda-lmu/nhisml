@@ -68,6 +68,8 @@ def _as_cat_str(s: pd.Series) -> pd.Series:
 # Schema object
 @dataclass
 class PreprocessSchema:
+    """Serializable description of a fitted preprocessing pipeline."""
+
     binary_cols: List[str]
     ordinal_cols: List[str]
     categorical_cols: List[str]
@@ -217,11 +219,24 @@ def build_preprocessor(
     add_missing_flags: bool = True,
     missing_flag_min_frac: float = 0.20,
 ) -> Pipeline:
-    """
-    Returns an UNFITTED Pipeline:
-      ("frame" -> PrepareFrame, "ct" -> ColumnTransformer)
+    """Create an unfitted preprocessing pipeline for NHIS predictor columns.
 
-    Fit happens exactly once when the full model Pipeline is fit.
+    The pipeline remaps NHIS missing-value codes, recodes binary ``1``/``2``
+    values, imputes and scales ordinal values, one-hot encodes categoricals,
+    and optionally adds missingness flags. Fit it only as part of a model
+    pipeline so learned categories and statistics come from training data.
+
+    Args:
+        binary_cols: Columns coded as NHIS ``1``/``2`` binary responses.
+        ordinal_cols: Numeric ordinal predictor columns.
+        categorical_cols: Nominal predictor columns to one-hot encode.
+        rare_min_count: Minimum training frequency for a categorical level.
+        add_missing_flags: Whether to add flags for ordinal and categorical
+            columns.
+        missing_flag_min_frac: Retained for backwards compatibility.
+
+    Returns:
+        An unfitted scikit-learn ``Pipeline``.
     """
     frame = PrepareFrame(
         binary_cols=binary_cols,
@@ -261,6 +276,18 @@ def build_preprocessor(
 
 # Schema extraction after fitting
 def build_schema_from_fitted(preproc: Pipeline) -> PreprocessSchema:
+    """Extract a serializable schema from a fitted preprocessing pipeline.
+
+    Args:
+        preproc: Fitted pipeline returned by :func:`build_preprocessor`.
+
+    Returns:
+        The learned columns, category levels, missingness flags, and scaler
+        statistics.
+
+    Raises:
+        ValueError: If ``preproc`` does not have the expected fitted steps.
+    """
     if (
         not isinstance(preproc, Pipeline)
         or "frame" not in preproc.named_steps
@@ -300,6 +327,14 @@ def build_schema_from_fitted(preproc: Pipeline) -> PreprocessSchema:
 
 # Feature name extraction
 def get_feature_names(preproc: Pipeline) -> List[str]:
+    """Return transformed feature names from a fitted preprocessing pipeline.
+
+    Args:
+        preproc: Fitted pipeline returned by :func:`build_preprocessor`.
+
+    Raises:
+        ValueError: If ``preproc`` does not have a column-transformer step.
+    """
     if not isinstance(preproc, Pipeline) or "ct" not in preproc.named_steps:
         raise ValueError("Expected a fitted Pipeline with a 'ct' step.")
 

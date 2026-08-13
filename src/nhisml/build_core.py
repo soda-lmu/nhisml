@@ -82,6 +82,23 @@ def build_core_year(
     weight_col: str = "WTFA_A",
     extra_cols: Optional[List[str]] = None,
 ) -> Path:
+    """Build a harmonized core parquet dataset for one survey year.
+
+    The output includes the selected feature-set columns, task-label columns,
+    survey weights, and the columns needed for built-in subgroup analysis.
+
+    Args:
+        year: Survey year to build.
+        data_dir: Base directory containing the cached raw ZIP archive.
+        out_dir: Directory for the parquet dataset and its manifest.
+        featureset: Registered predictor feature set to include.
+        tasks: Task names whose label columns must be retained.
+        weight_col: Survey-weight column to retain.
+        extra_cols: Additional raw columns to retain when present.
+
+    Returns:
+        Path to the generated ``core_<year>.parquet`` file.
+    """
     tasks = tasks or ["srh_binary", "smoking_current"]
 
     zip_path = _raw_zip_path(data_dir, year)
