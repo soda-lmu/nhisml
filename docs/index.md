@@ -9,6 +9,8 @@
 
 **nhisml** is a survey-aware machine learning toolkit for the [National Health Interview Survey (NHIS)](https://www.cdc.gov/nchs/nhis/index.html) Adults public-use microdata. It provides a reproducible, end-to-end pipeline — from raw data download through model training, cross-year evaluation, and subgroup fairness analysis — designed for researchers in public health, epidemiology, and health services research.
 
+> **Notice:** This project is independent and is not affiliated with, endorsed by, or associated with NHIS, the CDC, or any related entity or project.
+
 ## What the package provides
 
 - NHIS-aware preprocessing, including missing-code remapping and survey weights
