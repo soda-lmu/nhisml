@@ -1,5 +1,9 @@
 # nhisml
 
+<p align="center">
+  <img src="logo.svg" alt="nhisml logo" width="280">
+</p>
+
 [![Tests](https://github.com/soda-lmu/nhisml/actions/workflows/tests.yml/badge.svg)](https://github.com/soda-lmu/nhisml/actions/workflows/tests.yml)
 [![PyPI version](https://badge.fury.io/py/nhisml.svg)](https://badge.fury.io/py/nhisml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
