@@ -12,6 +12,10 @@ nav = [
   { "Reference statistics" = "reference_statistics.md" },
 ]
 
+[project.theme]
+logo = "assets/logo-mark.svg"
+favicon = "assets/logo-mark.svg"
+
 [project.plugins.mkdocstrings.handlers.python]
 paths = ["src"]
 

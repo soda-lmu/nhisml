@@ -1,11 +1,15 @@
+<img src="assets/logo.svg" alt="nhisml logo" width="200" align="right" />
+
 # nhisml
 
-**nhisml** is a survey-aware machine learning toolkit for National Health
-Interview Survey (NHIS) Adults public-use microdata. It provides a reproducible
-workflow from data download to model training, cross-year evaluation, and
-subgroup analysis.
+[![Tests](https://github.com/soda-lmu/nhisml/actions/workflows/tests.yml/badge.svg)](https://github.com/soda-lmu/nhisml/actions/workflows/tests.yml)
+[![PyPI version](https://badge.fury.io/py/nhisml.svg)](https://badge.fury.io/py/nhisml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 
-## What it provides
+**nhisml** is a survey-aware machine learning toolkit for the [National Health Interview Survey (NHIS)](https://www.cdc.gov/nchs/nhis/index.html) Adults public-use microdata. It provides a reproducible, end-to-end pipeline — from raw data download through model training, cross-year evaluation, and subgroup fairness analysis — designed for researchers in public health, epidemiology, and health services research.
+
+## What the package provides
 
 - NHIS-aware preprocessing, including missing-code remapping and survey weights
 - Built-in binary prediction tasks for self-rated health and current smoking
