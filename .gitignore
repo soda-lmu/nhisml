@@ -3,6 +3,7 @@ dist/
 paper_outputs/
 runs/
 scripts/
+site/
 
 .DS_Store
 .venv/

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="497 111 413 413" width="413" height="413" role="img" aria-labelledby="title desc">
+  <title id="title">nhisml mark</title>
+  <desc id="desc">A purple and green data network with an electrocardiogram line.</desc>
+  <defs>
+    <linearGradient id="purple" x1="510" y1="140" x2="760" y2="500" gradientUnits="userSpaceOnUse"><stop stop-color="#57218e"/><stop offset="1" stop-color="#aa70dc"/></linearGradient>
+    <linearGradient id="green" x1="740" y1="120" x2="900" y2="505" gradientUnits="userSpaceOnUse"><stop stop-color="#13b979"/><stop offset="1" stop-color="#65dfa0"/></linearGradient>
+  </defs>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="10">
+    <g stroke="url(#purple)">
+      <path d="M529 258H646V138H762M529 258V378H646V496H762"/>
+      <path d="M529 258L586 318 646 258 704 196 762 258 820 318 762 378 704 437 646 378 586 318"/>
+      <path d="M529 378L646 258M646 138L704 196 732 296M646 378L704 437 676 340"/>
+    </g>
+    <g stroke="url(#green)">
+      <path d="M762 138V258H878V378H762V496H646"/>
+      <path d="M762 138L704 196M762 258L820 318 878 258M820 318L878 378M820 318L762 378 704 437 762 496"/>
+    </g>
+    <path d="M586 318H646C669 318 668 309 674 284C680 257 694 255 700 281L712 357C716 379 728 379 734 354L743 331C747 320 753 318 762 318H820" stroke="#57d990" stroke-width="11"/>
+  </g>
+  <g>
+    <g fill="url(#purple)">
+      <circle cx="529" cy="258" r="27"/><circle cx="646" cy="258" r="19"/><circle cx="646" cy="138" r="19"/><circle cx="704" cy="196" r="22"/><circle cx="586" cy="318" r="22"/><circle cx="529" cy="378" r="18"/><circle cx="646" cy="378" r="19"/><circle cx="646" cy="496" r="28"/><circle cx="704" cy="437" r="22"/><circle cx="676" cy="340" r="10"/><circle cx="732" cy="296" r="10"/>
+    </g>
+    <g fill="url(#green)">
+      <circle cx="762" cy="138" r="27"/><circle cx="762" cy="258" r="19"/><circle cx="820" cy="318" r="22"/><circle cx="878" cy="258" r="18"/><circle cx="878" cy="378" r="27"/><circle cx="762" cy="378" r="19"/><circle cx="762" cy="496" r="19"/>
+    </g>
+  </g>
+</svg>

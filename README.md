@@ -1,8 +1,6 @@
-# nhisml
+<img src="assets/logo.svg" alt="nhisml logo" width="200" align="right" />
 
-<p align="center">
-  <img src="logo.svg" alt="nhisml logo" width="280">
-</p>
+# nhisml
 
 [![Tests](https://github.com/soda-lmu/nhisml/actions/workflows/tests.yml/badge.svg)](https://github.com/soda-lmu/nhisml/actions/workflows/tests.yml)
 [![PyPI version](https://badge.fury.io/py/nhisml.svg)](https://badge.fury.io/py/nhisml)
@@ -42,7 +40,7 @@ For development and testing:
 
 ```bash
 git clone https://github.com/soda-lmu/nhisml.git
-cd nhis-ml-benchmark
+cd nhisml
 pip install -e ".[dev]"
 ```
 
