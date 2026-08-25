@@ -45,42 +45,76 @@ pip install -e ".[dev]"
 ```
 
 
-## Quick Start
+## Getting Started
 
-### 1. Fetch raw data
+### Python API
 
-```bash
-# Download and cache raw NHIS Adults public-use files from the CDC FTP server
-nhisml fetch --year 2023 --year 2024
+The quickest way to get going is straight from within Python.
+
+```python
+import nhisml
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+
+# Downloads, builds and caches the dataset
+df = nhisml.load_core_year(2023)
+
+# Task and feature set definitions. Not every featureset column is present
+# in every survey year (e.g. some psychological-distress items were added
+# in 2024), so restrict to columns actually available in this year's data.
+task = nhisml.make_task("srh_binary")
+featureset = nhisml.get_featureset("core", filter=df.columns)
+
+# Labels, eligibility mask, and survey weights normalized to mean 1
+y, eligible = task.make_labels(df)
+df, y = df.loc[eligible].reset_index(drop=True), y[eligible]
+weights = nhisml.normalize_weights(df["WTFA_A"])
+
+# Build the preprocessing pipeline and fit a simple survey-weighted model.
+preprocessor = nhisml.build_preprocessor(
+    binary_cols=featureset.binary_12,
+    ordinal_cols=featureset.ordinal,
+    categorical_cols=featureset.categorical,
+)
+model = Pipeline([
+  ("prep", preprocessor),
+  ("clf", LogisticRegression(max_iter=1000))
+])
+model.fit(df, y, clf__sample_weight=weights)
+
+proba = model.predict_proba(df)[:, 1]
+
+print(
+    f"Fit on {len(df):,} eligible rows; predicted probability range: "
+    f"[{proba.min():.3f}, {proba.max():.3f}]"
+)
 ```
 
-### 2. Build the core analysis dataset
+For survey-weighted OOF threshold tuning, calibration, cross-year evaluation,
+and subgroup fairness metrics, use the lower-level utilities in
+`nhisml.utils` and `nhisml.subgroup`, or use the CLI below.
+
+### Command Line
 
 ```bash
-# Extract and harmonize predictor and label columns into a clean parquet file
+# 1. Download and cache raw NHIS Adults public-use files from the CDC FTP server
+nhisml fetch --year 2023 --year 2024
+
+# 2. Extract and harmonize predictor and label columns into parquet file(s)
 nhisml build-core --year 2023
 nhisml build-core --year 2024
-```
 
-### 3. Train a baseline model
-
-```bash
-# Elastic-net logistic regression (default) with survey-weighted OOF threshold tuning
+# 3. Train a baseline model: elastic-net logistic regression (default) with
+# survey-weighted OOF threshold tuning
 nhisml train --in data/core_2023.parquet --task srh_binary
 
 # Random forest with probability calibration
 nhisml train --in data/core_2023.parquet --task srh_binary --model rf --calibrate
-```
 
-### 4. Evaluate on held-out year data
-
-```bash
+# 4. Evaluate on held-out year data
 nhisml evaluate --task srh_binary --latest --year 2024
-```
 
-### 5. Subgroup fairness analysis
-
-```bash
+# 5. Subgroup fairness analysis
 nhisml subgroup --task srh_binary --latest --year 2024 --by sex age education
 ```
 
@@ -88,7 +122,7 @@ nhisml subgroup --task srh_binary --latest --year 2024 --by sex age education
 
 | Task name         | Target variable    | Positive class             |
 |-------------------|--------------------|----------------------------|
-| `srh_binary`      | PHSTAT_A           | Fair or Poor self-rated health (values 4–5) |
+| `srh_binary`      | PHSTAT_A           | Fair or Poor self-rated health (values 4-5) |
 | `smoking_current` | SMKCIGST_A / SMKNOW_A | Current every-day or some-day smoker |
 
 List all available tasks and describe them from the command line:
@@ -111,33 +145,6 @@ The `core` feature set includes 69 NHIS Adults predictors spanning:
 ```bash
 nhisml list-featuresets
 nhisml describe-featureset core
-```
-
-## Python API
-
-In addition to the CLI, all functionality is accessible as a Python library:
-
-```python
-import nhisml
-
-# Task and feature set definitions
-task = nhisml.make_task("srh_binary")
-featureset = nhisml.get_featureset("core")
-
-# Build the preprocessing pipeline (unfitted)
-preprocessor = nhisml.build_preprocessor(
-    binary_cols=featureset.binary_12,
-    ordinal_cols=featureset.ordinal,
-    categorical_cols=featureset.categorical,
-)
-
-# Normalize survey weights
-import pandas as pd
-df = pd.read_parquet("data/core_2023.parquet")
-weights = nhisml.normalize_weights(df["WTFA_A"])
-
-# Generate labels and eligibility mask
-y, eligible = task.make_labels(df)
 ```
 
 ## Run Directory Structure

@@ -32,6 +32,26 @@ class TestRegistry:
         with pytest.raises(ValueError, match="Unknown featureset"):
             get_featureset("nonexistent_featureset_xyz")
 
+    def test_get_featureset_filter_filters_to_available(self):
+        full = get_featureset("core")
+        keep = [full.binary_12[0], full.ordinal[0]]
+        filtered = get_featureset("core", filter=keep)
+        assert filtered.binary_12 == [full.binary_12[0]]
+        assert filtered.ordinal == [full.ordinal[0]]
+        assert filtered.categorical == []
+
+    def test_get_featureset_filter_ignores_unknown_columns(self):
+        filtered = get_featureset("core", filter=["not_a_real_column"])
+        assert filtered.binary_12 == []
+        assert filtered.ordinal == []
+        assert filtered.categorical == []
+
+    def test_get_featureset_filter_preserves_name_and_description(self):
+        full = get_featureset("core")
+        filtered = get_featureset("core", filter=[])
+        assert filtered.name == full.name
+        assert filtered.description == full.description
+
 
 class TestCoreFeatureSet:
     def setup_method(self):

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, Iterable, List, Optional
 
 
 @dataclass(frozen=True)
@@ -116,22 +116,36 @@ _register(
 )
 
 
-# Public API
-def get_featureset(name: str = "core") -> FeatureSet:
+def get_featureset(name: str = "core", filter: Optional[Iterable[str]] = None) -> FeatureSet:
     """Return the registered feature set named ``name``.
 
     Args:
         name: Feature-set identifier. Defaults to ``"core"``.
+        filter: If given, restrict each column group to columns also present
+            in ``filter`` (e.g. ``df.columns``). Useful since not every
+            featureset column is present in every survey year.
 
     Raises:
         ValueError: If no feature set is registered under ``name``.
     """
     try:
-        return _FEATURESETS[name]
+        fs = _FEATURESETS[name]
     except KeyError:
         raise ValueError(
             f"Unknown featureset '{name}'. Available: {', '.join(sorted(_FEATURESETS))}"
         )
+
+    if filter is None:
+        return fs
+
+    available = set(filter)
+    return FeatureSet(
+        name=fs.name,
+        description=fs.description,
+        binary_12=[c for c in fs.binary_12 if c in available],
+        ordinal=[c for c in fs.ordinal if c in available],
+        categorical=[c for c in fs.categorical if c in available],
+    )
 
 
 def list_featuresets() -> List[str]:
