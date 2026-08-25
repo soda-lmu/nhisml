@@ -9,6 +9,7 @@ import io
 import json
 import zipfile
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -18,6 +19,7 @@ from nhisml.build_core import (
     _basic_normalize,
     _collect_required_columns,
     build_core_year,
+    load_core_year,
 )
 
 
@@ -212,3 +214,44 @@ class TestBuildCoreYear:
         )
         df = pd.read_parquet(out_path)
         assert "WTFA_A" in df.columns
+
+
+# ---------------------------------------------------------------------------
+# load_core_year — fetch + build + load convenience wrapper
+# ---------------------------------------------------------------------------
+
+
+class TestLoadCoreYear:
+    def test_builds_and_returns_dataframe_when_uncached(self, tmp_path):
+        """With the raw zip already cached, load_core_year should build the
+        core parquet (no network call needed) and return it as a DataFrame."""
+        _make_synthetic_zip(tmp_path, 2023)
+        df = load_core_year(2023, data_dir=str(tmp_path))
+        assert isinstance(df, pd.DataFrame)
+        assert len(df) == 100
+        assert (tmp_path / "core_2023.parquet").exists()
+
+    def test_uses_cached_parquet_without_refetching(self, tmp_path):
+        """If core_<year>.parquet already exists, load_core_year should read
+        it directly without touching fetch_year at all."""
+        _make_synthetic_zip(tmp_path, 2023)
+        build_core_year(year=2023, data_dir=str(tmp_path), out_dir=str(tmp_path))
+
+        with patch("nhisml.build_core.fetch_year") as mock_fetch:
+            df = load_core_year(2023, data_dir=str(tmp_path))
+        mock_fetch.assert_not_called()
+        assert len(df) == 100
+
+    def test_force_rebuilds_even_if_cached(self, tmp_path):
+        _make_synthetic_zip(tmp_path, 2023)
+        build_core_year(year=2023, data_dir=str(tmp_path), out_dir=str(tmp_path))
+
+        with patch("nhisml.build_core.fetch_year") as mock_fetch:
+            load_core_year(2023, data_dir=str(tmp_path), force=True)
+        mock_fetch.assert_called_once()
+
+    def test_unknown_year_raises(self, tmp_path):
+        """No cached parquet and no configured download URL should surface
+        fetch_year's error rather than silently returning nothing."""
+        with pytest.raises(ValueError, match="No URL configured"):
+            load_core_year(2025, data_dir=str(tmp_path))
