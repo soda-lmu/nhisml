@@ -76,8 +76,8 @@ population-representative U.S. health survey data.
 
 # Software Design
 
-We developed an open-source Python package (`nhisml`)[^1] aimed at
-integrating machine learning functions into NHIS data seamlessly.
+We developed an open-source Python package[^1] aimed at
+seamlessly integrating machine learning functions with NHIS data.
 `nhisml` has five modules that form a linear data processing pipeline.
 Each module is independently callable via the `nhisml` commands and
 produces a structured artifact used at the next stage. The pipeline
@@ -86,42 +86,30 @@ and normalization (`build_core`), preprocessing (`preprocess`),
 weight-aware model training (`train`), and finally population-weighted
 evaluation and subgroup auditing (`evaluate`, `subgroup`).
 
-The architecture follows a registry pattern for its two primary
-extension points: Task objects and FeatureSet objects. Both are
-registered by name in module-level dictionaries and retrieved via
-factory functions (`maketask()`, `getfeatureset()`). This means that
-adding a new prediction task or a new feature set requires editing a
-single file and adding a single registration call, with no modifications
-to any other module.
+The package is designed with extensibility in mind and both new tasks and featuresets can easily be added to the package.
 
 #### Preprocessing Pipeline
 
-The preprocessing pipeline is implemented as a scikit-learn pipeline
+The preprocessing pipeline is implemented as a scikit-learn [@sklearn] pipeline
 with two steps: a custom `PrepareFrame` transformer followed by a
 `ColumnTransformer`. This design ensures that all transformations are
 fit exclusively on training data and applied without re-fitting at
 evaluation time, preventing any form of data leakage.
 
-PrepareFrame encodes two categories of transformation. Survey-specific
-operations require no configuration from the user: NHIS non-response 
-codes are mapped to `NaN`, binary yes/no items are one-hot encoded, and 
-rare categorical levels are collapsed into a single "rare" category.
-At evaluation time, unseen levels are
-automatically routed to this category. Missingness indicator flags are
-generated for all ordinal and categorical columns.
+Survey-specific operations require no configuration from the user: NHIS non-response codes are correctly mapped to `NaN`, binary yes/no items are one-hot encoded, and rare categorical levels are collapsed into a single *"rare"* category.
+At evaluation time, unseen levels are automatically routed to this category. Missingness indicator flags are generated for all ordinal and categorical columns.
 
 #### Tasks and Feature Sets
 
-A Task is a frozen dataclass that encodes the following: the source
+A `Task` is a frozen dataclass that encodes the source
 variable name, the label derivation function, the set of NHIS columns
 that must be present in the dataset, and a human-readable description.
 The label derivation function accepts a DataFrame and returns a tuple of
 `(y, eligiblemask)`, where `eligiblemask` identifies which respondents
 have valid responses for this particular outcome. This design ensures
-that eligibility filtering -- which requires knowing that code 9 means
-"not ascertained" rather than a genuine response -- is included in the
+that eligibility filtering -- which requires knowing that, e.g., a code of 9 corresponds to *"not ascertained"* rather than a genuine response -- is included in the
 task. The task registry is designed to be extensible, adding a new task
-requires only defining a task dataclass instance with the appropriate
+requires only defining a `Task` dataclass instance with the appropriate
 label function.
 
 The current release ships two pre-defined tasks, specified in Table 1. The
@@ -137,7 +125,7 @@ feature set summary is given in Table 2.
 |                    |                          |                            |                          | (primary)       |
 +--------------------+--------------------------+----------------------------+--------------------------+-----------------+
 
-: Table 1. Pre-defined Benchmark Tasks
+: Pre-defined Benchmark Tasks
 
 +-----------------+------+------------------------------------+----------------------------+
 | Class           | k    | Domains                            | Transformations            |
@@ -156,7 +144,7 @@ feature set summary is given in Table 2.
 |                 |      | employment status                  | encoding                   |
 +-----------------+------+------------------------------------+----------------------------+
 
-: Table 2. Feature Sets by Measurement Class
+: Feature Sets by Measurement Class
 
 #### Survey Weights, Model Training and Evaluation
 
@@ -171,8 +159,9 @@ survey weights passed as observation-level sample weights, applied
 automatically across the full-data fit and all cross-validation folds.
 
 For model evaluation, all metrics (AUC, PR-AUC, F1, Brier score,
-log-loss, and ECE) are computed using the survey weights of the NHIS. To
-assess differential model performance across sociodemographic subgroups,
+log-loss, and ECE) are computed using the available survey weights
+of the NHIS. To assess differential model performance across
+sociodemographic subgroups,
 stratified evaluations are build for sex, age, and educational
 attainment and can be extended to additional NHIS variables of interest.
 Within each subgroup level, the same suite of weighted metrics is
@@ -184,14 +173,14 @@ expected calibration error and the corresponding overall metric.
 #### Reproducibility
 
 Every `nhisml` train invocation produces a self-contained, timestamped
-run directory. The manifest.json file records the task name, model name,
+run directory. A `manifest.json` file records the task name, model name,
 featureset name, absolute input path, effective sample size, weight
 usage flag, all artifact paths, and the exact software versions used.
 
 # State of the Field
 
 The Python package `folktables` inspired the development of this
-package. The developers behind `folktables` created a collection of
+package. The package provides a collection of
 datasets derived from US Census data and programmed prediction tasks
 corresponding to various sociodemographic domains, such as income and
 housing [@ding2021].
@@ -217,7 +206,7 @@ NHIS data through our package.
 While NHANES has clinical and survey data, the NHIS has a much higher
 number of variables or features or questions, thus making it a more
 natural fit for machine learning methods. There are numerous instances
-in the literature of other researchers using ML to analyze NHIS data:
+in the literature of researchers using ML to analyze NHIS data:
 [@shilane2023machine] predicted telehealth utilization;
 [@miller2023determinants] predicted life satisfaction; [@guan2025breast]
 predicted breast cancer risk; [@seixas20180] created sleep and physical
