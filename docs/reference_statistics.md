@@ -1,14 +1,10 @@
 # NHIS Adults Reference Statistics
 
-This document records the ground-truth descriptive statistics derived from the
+This document records ground-truth descriptive statistics derived from the
 official CDC/NCHS NHIS Adults public-use microdata files for 2023 and 2024.
-They serve two purposes:
-
-1. **Reproducibility check** — after running `nhisml fetch` and `nhisml build-core`,
-   users can run `nhisml validate-data --year 2023 --year 2024` to confirm their
-   processed files match these values.
-2. **JOSS correctness criterion** — the automated test suite in
-   `tests/test_data_integration.py` uses these figures as toleranced assertions.
+After running `nhisml fetch` and `nhisml build-core`, run
+`nhisml validate-data --year 2023 --year 2024` to confirm your processed
+files match these values.
 
 All statistics below were computed from the raw CDC/NCHS zip files using
 `nhisml build-core` version 0.4.0 on the unmodified public-use files.
@@ -23,10 +19,10 @@ All statistics below were computed from the raw CDC/NCHS zip files using
 | Columns in core parquet | 64 | 75 |
 | Source URL | [adult23csv.zip](https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/NHIS/2023/adult23csv.zip) | [adult24csv.zip](https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/NHIS/2024/adult24csv.zip) |
 
-The 2024 file is larger because NCHS expanded the questionnaire to include
-additional psychological distress items (`HOPELESS_A`, `LONELY_A`, `NERVOUS_A`,
-`RESTLESS_A`, `SAD_A`, `WORTHLESS_A`) and urban/rural classification
-(`URBRRL23`).
+The 2024 file has more columns because NCHS expanded the questionnaire to
+include additional psychological distress items (`HOPELESS_A`, `LONELY_A`,
+`NERVOUS_A`, `RESTLESS_A`, `SAD_A`, `WORTHLESS_A`) and urban/rural
+classification (`URBRRL23`).
 
 ---
 
@@ -46,9 +42,7 @@ codes and are excluded (ineligible).
 | Fair/Poor — survey-weighted rate | 15.1% | 14.84% |
 
 The ~1.5 pp gap between unweighted and weighted rates reflects the
-oversampling of older and lower-income adults in NHIS who are more likely
-to report fair/poor health. After weighting, the estimate is closer to the
-national population proportion.
+oversampling of older and lower-income adults in NHIS.
 
 **Note on AGEP_A missing codes:** The raw parquet retains NHIS missing codes
 97 (Refused), 98 (Not ascertained), and 99 (Don't know) in AGEP_A. These are
@@ -99,78 +93,34 @@ Threshold used: 0.25 (OOF-tuned weighted F1 on 2023 training data).
 | 35–49 | ~7,000 | ~12% | ~0.860 |
 | 18–34 | ~6,800 | ~8% | ~0.845 |
 
-The strong age gradient (24% in 65+ vs. 8% in 18–34) is expected and
-consistent with published NHIS estimates.
+The strong age gradient (24% in 65+ vs. 8% in 18–34) is expected.
 
 ---
 
 ## Model performance benchmarks (cross-year, lasso baseline)
 
-These benchmarks are produced by training on 2023 and evaluating on 2024.
-They serve as a **sanity check for reproducibility**, not as claims of
-state-of-the-art performance.
+Produced by training on 2023 and evaluating on 2024 — a sanity check for
+reproducibility, not a claim of state-of-the-art performance.
 
 | Task | Model | OOF Weighted AUC (2023) | Held-out Weighted AUC (2024) |
 |------|-------|------------------------:|-----------------------------:|
 | `srh_binary` | lasso | — | 0.859 |
 | `smoking_current` | lasso | 0.729 | 0.742 |
 
-Users who retrain from scratch should expect values within approximately
-±0.01 AUC of these figures, given the deterministic seeds in the codebase
-(`random_state=42` throughout). Larger deviations suggest a data issue.
+Retraining from scratch should reproduce these within ~±0.01 AUC given the
+deterministic seeds in the codebase (`random_state=42` throughout).
 
 ---
 
 ## How to verify
 
-### Using the CLI (recommended for non-Python users)
-
 ```bash
 nhisml validate-data --year 2023 --year 2024
 ```
 
-Example output for a correct installation:
-
-```
-============================================================
-  nhisml validate-data — NHIS Adults 2023
-  File : data/core_2023.parquet
-  Result: PASS  (14 passed, 0 failed)
-============================================================
-  ✓ Row count
-  ✓ Minimum column count
-  ✓ Required columns present
-  ✓ Survey weights: no missing values
-  ✓ Survey weights: all positive
-  ✓ SRH eligible count
-  ✓ SRH unweighted prevalence (ref ≈ 15.7%, ±1%)
-  ✓ SRH weighted prevalence (ref ≈ 15.1%, ±1%)
-  ✓ Smoking eligible count (SMKCIGST_A)
-  ✓ Smoking unweighted prevalence (ref ≈ 11.5%, ±1%)
-  ✓ Smoking weighted prevalence (ref ≈ 10.5%, ±1%)
-  ✓ Sex distribution plausible (49–55% female)
-  ✓ All four NCHS regions present
-  ✓ Age range plausible (18–85, top-coded, excl. missing codes 97-99)
-```
-
-### Using pytest (for developers)
-
-```bash
-pytest tests/test_data_integration.py -v
-```
-
-These tests are automatically skipped when the parquet files are absent,
-so the full test suite passes cleanly in CI environments without data.
-
-### Using Python directly
-
-```python
-from nhisml.validate_data import validate_core_year
-
-report = validate_core_year(2024, "data/core_2024.parquet")
-report.print_report(verbose=True)
-assert report.all_passed
-```
+For developers, the same checks run via
+`pytest tests/test_data_integration.py -v`; these tests are skipped
+automatically when the parquet files are absent.
 
 ---
 
