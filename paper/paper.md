@@ -242,7 +242,7 @@ Claude Code (Sonnet 4.6 and 5) was used for writing the scripts for
 automated testing of the package, for debugging coding errors as well as minor
 edits and setting up the documentation website. 
 All contributions from Claude models were verified by the authors to 
-ensure their accuracy.
+ensure their accuracy. The SVG logo was generated in an iterative process utilizing Google Gemini 3.5 Flash.
 
 # Acknowledgments
 
