@@ -20,6 +20,7 @@ Preprocessing
 Data utilities
     fetch_year(year, ...)           → download raw NHIS zip
     build_core_year(year, ...)      → build clean core parquet
+    load_core_year(year, ...)       → fetch + build (if needed) + load as DataFrame
 
 Model utilities (lower-level, used by the CLI)
     weighted_threshold_via_oof(...)  → (threshold, perf_dict, oof_probs)
@@ -37,7 +38,7 @@ from .preprocess import (
     normalize_weights,
 )
 from .fetch import fetch_year
-from .build_core import build_core_year
+from .build_core import build_core_year, load_core_year
 from .utils import (
     fit_calibrated_from_oof,
     oof_proba,
@@ -64,6 +65,7 @@ __all__ = [
     # data utilities
     "fetch_year",
     "build_core_year",
+    "load_core_year",
     # model utilities
     "fit_calibrated_from_oof",
     "oof_proba",

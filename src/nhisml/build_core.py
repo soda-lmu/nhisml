@@ -9,6 +9,7 @@ from typing import List, Optional, Set
 import pandas as pd
 
 from .featuresets import get_featureset
+from .fetch import fetch_year
 from .tasks import make_task
 
 
@@ -128,6 +129,49 @@ def build_core_year(
 
     print(f"[build-core] Wrote {out_path} ({core.shape[0]} rows, {core.shape[1]} cols)")
     return out_path
+
+
+def load_core_year(
+    year: int,
+    data_dir: str = "data",
+    featureset: str = "core",
+    tasks: Optional[List[str]] = None,
+    weight_col: str = "WTFA_A",
+    force: bool = False,
+) -> pd.DataFrame:
+    """Fetch, build (if needed), and load one year of core NHIS Adults data.
+
+    Convenience wrapper for interactive/Python-API use: downloads and caches
+    the raw NHIS zip via :func:`~nhisml.fetch.fetch_year`, builds the
+    harmonized core parquet via :func:`build_core_year` if it is not already
+    cached on disk, and returns it as a DataFrame.
+
+    Args:
+        year: Survey year to load.
+        data_dir: Base directory for both raw and processed data.
+        featureset: Registered predictor feature set to include.
+        tasks: Task names whose label columns must be retained.
+        weight_col: Survey-weight column to retain.
+        force: Re-download the raw archive and rebuild the parquet even if
+            cached copies already exist.
+
+    Returns:
+        The core DataFrame for ``year``.
+    """
+    out_path = Path(data_dir) / f"core_{year}.parquet"
+    if out_path.exists() and not force:
+        return pd.read_parquet(out_path)
+
+    fetch_year(year, data_dir=data_dir, force=force)
+    out_path = build_core_year(
+        year=year,
+        data_dir=data_dir,
+        out_dir=data_dir,
+        featureset=featureset,
+        tasks=tasks,
+        weight_col=weight_col,
+    )
+    return pd.read_parquet(out_path)
 
 
 def cli(argv: Optional[list[str]] = None) -> None:
