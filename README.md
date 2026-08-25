@@ -1,6 +1,6 @@
-<img src="https://raw.githubusercontent.com/soda-lmu/nhisml/main/docs/assets/logo.svg" alt="nhisml logo" width="200" align="right" />
-
 # nhisml
+
+<img src="https://raw.githubusercontent.com/soda-lmu/nhisml/main/docs/assets/logo.svg" alt="nhisml logo" width="200" align="right" />
 
 [![Tests](https://github.com/soda-lmu/nhisml/actions/workflows/tests.yml/badge.svg)](https://github.com/soda-lmu/nhisml/actions/workflows/tests.yml)
 [![PyPI version](https://badge.fury.io/py/nhisml.svg)](https://badge.fury.io/py/nhisml)
