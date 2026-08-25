@@ -29,12 +29,6 @@ dev = [
   "zensical>=0.0.11; python_version >= '3.10'",
   "mkdocstrings-python>=1.16; python_version >= '3.10'"
 ]
-viz = [
-  "matplotlib>=3.8"
-]
-duckdb = [
-  "duckdb>=1.0"
-]
 
 [project.scripts]
 nhisml = "nhisml.cli:main"

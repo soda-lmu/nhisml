@@ -32,12 +32,6 @@ The NHIS Adults dataset is a rich, nationally representative survey with complex
 pip install nhisml
 ```
 
-To include visualization support:
-
-```bash
-pip install "nhisml[viz]"
-```
-
 For development and testing:
 
 ```bash

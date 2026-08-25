@@ -34,23 +34,3 @@ jobs:
       - name: Run tests
         run: |
           pytest tests/ -v --tb=short
-
-  # Separate job for optional dependencies (viz, duckdb)
-  test-optional:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install package with all optional dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev,viz,duckdb]"
-
-      - name: Run tests
-        run: |
-          pytest tests/ -v --tb=short
