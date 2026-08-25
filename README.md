@@ -162,15 +162,6 @@ After evaluation and subgroup analysis:
     └── subgroups_task=srh_binary.csv
 ```
 
-## Generating Paper Figures and Tables
-
-```bash
-python scripts/make_paper_outputs.py \
-  --tasks srh_binary smoking_current \
-  --run-for-task srh_binary=runs/<srh_run_dir> \
-  --run-for-task smoking_current=runs/<smoking_run_dir>
-```
-
 ## Running the Tests
 
 ```bash
@@ -186,13 +177,11 @@ Contributions are welcome. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 
 ## Citation
 
-
 ```bibtex
 @software{nhisml,
   title   = {{nhisml: A survey-aware machine learning toolkit for NHIS Adults data}},
   author  = {Lugu Reign, Nicholas and Lamoreaux, Catherine and Simson, Jan and Kern, Christoph and Kreuter, Frauke},
   year    = {2026},
-  version = {0.5.2},
   url     = {https://github.com/soda-lmu/nhisml}
 }
 ```
